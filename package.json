@@ -38,8 +38,9 @@
     ]
   },
   "dependencies": {
-    "@emotion/react": "^11.10.6",
-    "@emotion/styled": "^11.10.6",
+    "@chakra-ui/react": "^2.8.1",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
     "@faker-js/faker": "^7.6.0",
     "@iconify/react": "^4.1.0",
     "@mui/lab": "^5.0.0-alpha.103",
@@ -47,6 +48,7 @@
     "apexcharts": "^3.37.0",
     "change-case": "^4.1.2",
     "date-fns": "^2.29.3",
+    "framer-motion": "^10.16.4",
     "history": "^5.3.0",
     "lodash": "^4.17.21",
     "numeral": "^2.0.6",

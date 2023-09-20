@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 // @mui
 import {
   Card,
@@ -21,15 +22,16 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  TextField
 } from '@mui/material';
 // components
-import Label from '../components/label';
-import Iconify from '../components/iconify';
-import Scrollbar from '../components/scrollbar';
+import Label from '../../components/label';
+import Iconify from '../../components/iconify';
+import Scrollbar from '../../components/scrollbar';
 // sections
-import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
+import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
-import USERLIST from '../_mock/user';
+import USERLIST from '../../_mock/user';
 
 // ----------------------------------------------------------------------
 
@@ -75,7 +77,7 @@ function applySortFilter(array, comparator, query) {
 
 export default function UserPage() {
   const [open, setOpen] = useState(null);
-
+  const navigate = useNavigate()
   const [page, setPage] = useState(0);
 
   const [order, setOrder] = useState('asc');
@@ -149,24 +151,31 @@ export default function UserPage() {
   return (
     <>
       <Helmet>
-        <title> User | Minimal UI </title>
+        <title> Utilizadores </title>
       </Helmet>
 
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            User
+            Pagina de gestao de utilizadores
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
+          <Button variant="contained" onClick={() => { navigate("/dashboard/user/add") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+            Cadastrar utilizador
           </Button>
         </Stack>
-
+        <Stack>
+          <Typography variant="body2" gutterBottom>Lista de utilizadores</Typography>
+        </Stack>
+        <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
+          <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
+          <Button variant="contained" onClick={() => { navigate("/user/add") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
+            Pesquisar
+          </Button>
+        </Stack>
         <Card>
-          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 
           <Scrollbar>
-            <TableContainer sx={{ minWidth: 800 }}>
+            <TableContainer sx={{ minWidth: 900 }}>
               <Table>
                 <UserListHead
                   order={order}
@@ -259,7 +268,7 @@ export default function UserPage() {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Card>
-      </Container>
+      </Container >
 
       <Popover
         open={Boolean(open)}
@@ -281,12 +290,12 @@ export default function UserPage() {
       >
         <MenuItem>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
+          Editar
         </MenuItem>
 
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
+          Eliminar
         </MenuItem>
       </Popover>
     </>
