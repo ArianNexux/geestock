@@ -37,8 +37,9 @@ import USERLIST from '../../_mock/user';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome', alignRight: false },
-  { id: 'company', label: 'E-mail', alignRight: false },
-  { id: 'role', label: 'Função', alignRight: false },
+  { id: 'company', label: 'Armazém', alignRight: false },
+  { id: 'role', label: 'Quantidade', alignRight: false },
+  { id: 'isVerified', label: 'Marca', alignRight: false },
   { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
@@ -74,7 +75,7 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UserPage() {
+export default function PiecesPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
@@ -150,19 +151,19 @@ export default function UserPage() {
   return (
     <>
       <Helmet>
-        <title> Utilizadores </title>
+        <title> Peças </title>
       </Helmet>
 
       <Container>
           <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
-           Início > Utilizadores
+           Início > Peças
           </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-           Gestão de utilizadores
+           Gestão de Peças
           </Typography>
-          <Button variant="contained" onClick={() => { navigate("/dashboard/usuario/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
-            Cadastrar utilizador
+          <Button variant="contained" onClick={() => { navigate("/dashboard/peca/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+            Cadastrar Peça
           </Button>
         </Stack>
    
@@ -200,9 +201,6 @@ export default function UserPage() {
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
-                            {
-                            /* <Avatar alt={name} src={avatarUrl} /> */
-                            }
                             <Typography variant="subtitle2" noWrap>
                               {name}
                             </Typography>
@@ -213,6 +211,7 @@ export default function UserPage() {
 
                         <TableCell align="left">{role}</TableCell>
 
+                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
 
                         <TableCell align="left">
                           <Label color={(status === 'Inactivo' && 'error') || 'success'}>{sentenceCase(status)}</Label>

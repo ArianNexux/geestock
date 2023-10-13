@@ -1,3 +1,4 @@
+import { Box } from '@chakra-ui/react';
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
@@ -36,9 +37,9 @@ import USERLIST from '../../_mock/user';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Nome', alignRight: false },
-  { id: 'company', label: 'E-mail', alignRight: false },
-  { id: 'role', label: 'Função', alignRight: false },
+  { id: 'name', label: 'Nome da Peça', alignRight: false },
+  { id: 'company', label: 'Barco', alignRight: false },
+  { id: 'role', label: 'Quantidade', alignRight: false },
   { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
@@ -74,7 +75,7 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UserPage() {
+export default function RequestsForMe() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
@@ -150,20 +151,21 @@ export default function UserPage() {
   return (
     <>
       <Helmet>
-        <title> Utilizadores </title>
+        <title> Requisições </title>
       </Helmet>
 
       <Container>
           <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
-           Início > Utilizadores
+           Início > Requisições > Requisições Para mim
           </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-           Gestão de utilizadores
+            Requisições para mim
           </Typography>
-          <Button variant="contained" onClick={() => { navigate("/dashboard/usuario/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
-            Cadastrar utilizador
-          </Button>
+        
+            <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+              Enviar Requisição
+            </Button>
         </Stack>
    
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
@@ -200,9 +202,6 @@ export default function UserPage() {
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
-                            {
-                            /* <Avatar alt={name} src={avatarUrl} /> */
-                            }
                             <Typography variant="subtitle2" noWrap>
                               {name}
                             </Typography>
@@ -292,12 +291,12 @@ export default function UserPage() {
       >
         <MenuItem>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Editar
+          Aceitar
         </MenuItem>
 
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Eliminar
+          Rejeitar
         </MenuItem>
       </Popover>
     </>

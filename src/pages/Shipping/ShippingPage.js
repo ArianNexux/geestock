@@ -37,9 +37,8 @@ import USERLIST from '../../_mock/user';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome', alignRight: false },
-  { id: 'company', label: 'E-mail', alignRight: false },
-  { id: 'role', label: 'Função', alignRight: false },
-  { id: 'status', label: 'Estado', alignRight: false },
+  { id: 'company', label: 'Código', alignRight: false },
+
   { id: '' },
 ];
 
@@ -74,7 +73,7 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UserPage() {
+export default function ShippingPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
@@ -150,25 +149,24 @@ export default function UserPage() {
   return (
     <>
       <Helmet>
-        <title> Utilizadores </title>
+        <title> Transportes </title>
       </Helmet>
 
       <Container>
           <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
-           Início > Utilizadores
+          Início > Transportes
           </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-           Gestão de utilizadores
+          Gestão de Transportes
           </Typography>
-          <Button variant="contained" onClick={() => { navigate("/dashboard/usuario/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
-            Cadastrar utilizador
+          <Button variant="contained" onClick={() => { navigate("/dashboard/transporte/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+          Cadastrar Transporte
           </Button>
         </Stack>
-   
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
           <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
-          <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
+          <Button variant="contained" onClick={() => { navigate("/transporte/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
@@ -200,9 +198,6 @@ export default function UserPage() {
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
-                            {
-                            /* <Avatar alt={name} src={avatarUrl} /> */
-                            }
                             <Typography variant="subtitle2" noWrap>
                               {name}
                             </Typography>
@@ -211,13 +206,7 @@ export default function UserPage() {
 
                         <TableCell align="left">{company}</TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
-
-
-                        <TableCell align="left">
-                          <Label color={(status === 'Inactivo' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                        </TableCell>
-
+          
                         <TableCell align="right">
                           <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
                             <Iconify icon={'eva:more-vertical-fill'} />

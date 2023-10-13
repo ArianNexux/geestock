@@ -5,7 +5,8 @@ import { styled } from '@mui/material/styles';
 // utils
 import { fCurrency } from '../../../utils/formatNumber';
 // components
-import Label from '../../../components/label';
+import Label from '../../../components/label/Label';
+
 import { ColorPreview } from '../../../components/color-utils';
 
 // ----------------------------------------------------------------------

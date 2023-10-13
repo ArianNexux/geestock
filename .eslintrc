@@ -1,4 +1,5 @@
 {
+  
   "root": true,
   "env": {
     "browser": true,
@@ -38,7 +39,6 @@
     "default-param-last": 0,
     "no-use-before-define": 0,
     "no-underscore-dangle": 0,
-    "no-extra-boolean-cast": 1,
     "react/button-has-type": 1,
     "no-restricted-exports": 0,
     "react/no-children-prop": 0,

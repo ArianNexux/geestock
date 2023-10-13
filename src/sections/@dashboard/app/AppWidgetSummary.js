@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { alpha, styled } from '@mui/material/styles';
 import { Card, Typography } from '@mui/material';
 // utils
+import SvgColor from '../../../components/svg-color';
 import { fShortenNumber } from '../../../utils/formatNumber';
 // components
 import Iconify from '../../../components/iconify';
@@ -29,6 +30,7 @@ AppWidgetSummary.propTypes = {
   total: PropTypes.number.isRequired,
   sx: PropTypes.object,
 };
+const iconPng = (name) => <SvgColor src={`/assets/icons/navbar/${name}.png`} sx={{ width: 1, height: 1 }} />;
 
 export default function AppWidgetSummary({ title, total, icon, color = 'primary', sx, ...other }) {
   return (
@@ -43,18 +45,6 @@ export default function AppWidgetSummary({ title, total, icon, color = 'primary'
       }}
       {...other}
     >
-      <StyledIcon
-        sx={{
-          color: (theme) => theme.palette[color].dark,
-          backgroundImage: (theme) =>
-            `linear-gradient(135deg, ${alpha(theme.palette[color].dark, 0)} 0%, ${alpha(
-              theme.palette[color].dark,
-              0.24
-            )} 100%)`,
-        }}
-      >
-        <Iconify icon={icon} width={24} height={24} />
-      </StyledIcon>
 
       <Typography variant="h3">{fShortenNumber(total)}</Typography>
 
