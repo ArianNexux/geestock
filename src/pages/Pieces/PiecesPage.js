@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import {
@@ -32,15 +32,14 @@ import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 import USERLIST from '../../_mock/user';
-
+import api from '../../utils/api';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome', alignRight: false },
-  { id: 'company', label: 'Armazém', alignRight: false },
-  { id: 'role', label: 'Quantidade', alignRight: false },
-  { id: 'isVerified', label: 'Marca', alignRight: false },
-  { id: 'status', label: 'Estado', alignRight: false },
+  { id: 'description', label: 'Armazém', alignRight: false },
+  { id: 'quantity', label: 'Quantidade', alignRight: false },
+  { id: 'price', label: 'Preço', alignRight: false },
   { id: '' },
 ];
 
@@ -144,10 +143,21 @@ export default function PiecesPage() {
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
-
+  const [data, setData] = useState([])
+  const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
   const isNotFound = !filteredUsers.length && !!filterName;
-
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await api.get("/piece")
+        setData(response.data)
+        console.log(response.data)
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [])
   return (
     <>
       <Helmet>
@@ -155,27 +165,27 @@ export default function PiecesPage() {
       </Helmet>
 
       <Container>
-          <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
+        <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
            Início > Peças
-          </Typography>
+        </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-           Gestão de Peças
+            Gestão de Peças
           </Typography>
           <Button variant="contained" onClick={() => { navigate("/dashboard/peca/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
             Cadastrar Peça
           </Button>
         </Stack>
-   
+
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
           <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
           <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
- 
+
         <Card>
-    
+
           <Scrollbar>
             <TableContainer sx={{ minWidth: 900 }}>
               <Table>
@@ -190,7 +200,7 @@ export default function PiecesPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                    const { id, name, description, quantity, price } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -207,15 +217,12 @@ export default function PiecesPage() {
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{description}</TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
+                        <TableCell align="left">{quantity}</TableCell>
 
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                        <TableCell align="left">{price}</TableCell>
 
-                        <TableCell align="left">
-                          <Label color={(status === 'Inactivo' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                        </TableCell>
 
                         <TableCell align="right">
                           <IconButton size="large" color="inherit" onClick={handleOpenMenu}>

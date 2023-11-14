@@ -1,7 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 // @mui
 import {
     Card,
@@ -22,40 +23,101 @@ import CustomFormControlInput from '../../components/CustomFormControlInput';
 // components
 import Iconify from '../../components/iconify';
 import { UserSchema } from './schema.ts';
+import api from '../../utils/api'
+import { Toast } from '../../components/Toast';
+import { GET_CATEGORY, GET_SUBCATEGORY, GET_SUPPLIER, GET_TRANSPORT } from '../../utils/endpoints';
+
 
 export default function FormPieces() {
-    
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    control,
-    watch,
-    setError,
-    getValues,
-    setValue,
-    clearErrors,
-  } = useForm({
-    resolver: zodResolver(UserSchema),
-  });
-    const roles = [
-        {label:"Armazéns", value:1},
-        {label:"Peças", value:2},
-        {label:"Requisições", value:3},
-        {label:"Ultilizadores", value:4},
-        {label:"Categorias", value:5},
-        {label:"Alertas", value:6},
-        {label:"Transporte", value:7},
-        {label:"Nota de Entrega", value:8},
-    ]
+
+    const navigate = useNavigate()
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        control,
+        watch,
+        setError,
+        getValues,
+        setValue,
+        clearErrors,
+    } = useForm({
+        resolver: zodResolver(UserSchema),
+    });
+    const { addToast } = Toast()
+
+    const transportId = watch("transportId")
+    const categoryId = watch("categoryId")
+    const warehouseId = watch("warehouseId")
+    const supplierId = watch("supplierId")
+    const subCategoryId = watch("subCategoryId")
+    const state = watch("state")
+    const [categoryData, setCategoryData] = useState([])
+    const [subCategoryData, setSubCategoryData] = useState([])
+    const [transportData, setTransportData] = useState([])
+    const [supplierData, setSupplierData] = useState([])
+    useEffect(() => {
+
+        const getData = async () => {
+            const responseCategories = await api.get(GET_CATEGORY)
+            const responseSubcategories = await api.get(GET_SUBCATEGORY)
+            const responseTransports = await api.get(GET_TRANSPORT)
+            const responseSuppliers = await api.get(GET_SUPPLIER)
+
+            setCategoryData(responseCategories.data.map(e => ({
+                value: e.id,
+                label: e.name
+            })))
+            setSubCategoryData(responseSubcategories.data.map(e => ({
+                value: e.id,
+                label: e.name
+            })))
+            setTransportData(responseTransports.data.map(e => ({
+                value: e.id,
+                label: e.name
+            })))
+            setSupplierData(responseSuppliers.data.map(e => ({
+                value: e.id,
+                label: e.name
+            })))
+        }
+        getData()
+    }, [])
+    const onSubmit = async (data) => {
+        console.log(errors)
+        console.log(data)
+        try {
+            const response = await api.post("/piece", {
+                ...data,
+                price: Number(data.price),
+                quantity: Number(data.quantity),
+                warehouseId: warehouseId.value,
+                supplierId: supplierId.value,
+                transportId: transportId.value,
+                categoryId: categoryId.value,
+                subCategoryId: subCategoryId.value,
+                state: state.value
+
+            })
+            if (response.status === 201) {
+                addToast({
+                    title: "Peça cadastrada com sucesso",
+                    status: "success"
+                })
+                navigate("/dashboard/peca")
+            }
+        } catch (e) {
+            console.log("Erro", e)
+        }
+    }
     return (
         <>
             <Helmet>
                 <title> Cadastrar Peças </title>
             </Helmet>
-            
+
             <Container>
-                    <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
+                <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
                 Início > Peças > Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
@@ -63,7 +125,7 @@ export default function FormPieces() {
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>
-                       Gestão de Peças
+                        Gestão de Peças
                     </Typography>
 
                 </Stack>
@@ -71,196 +133,168 @@ export default function FormPieces() {
                     <Typography variant="body2" gutterBottom>Cadastrar Peças</Typography>
                 </Stack>
                 <Container sx={{ backgroundColor: "white", width: "100%", padding: "40px" }} display="flex" flexDirection="column" alignContent="space-between">
-                    <Box mb={5}>
-                        <CustomFormControlInput 
-                            errors={errors}
-                            fieldName="Peça"
-                            fieldNameObject="name"
-                            isDisabled={false}
-                            register={register}
-                            type="text"
-                            placeholder="Insira o nome da Peça"
-                        />
-                   </Box>
-                   
-                    <Box mb={5}>
-                        <CustomFormControlTextArea 
-                            errors={errors}
-                            fieldName="Descrição"
-                            fieldNameObject="description"
-                            isDisabled={false}
-                            register={register}
-                            isRequired={false}
-                            placeholder="Descrição"
-                        />
-                    </Box>
-                    <Box mb={5}>
-                        <CustomFormControlInput 
-                            errors={errors}
-                            fieldName="Preço"
-                            fieldNameObject="price"
-                            isDisabled={false}
-                            register={register}
-                            isRequired={false}
-                            type="number"
-                            placeholder="Insira o preço aqui"
-                        />
-                    </Box>
-                    <Box mb={5}>
-                       <CustomFormControlSelect 
-                         errors={errors}
-                         fieldNameObject="container"
-                         isDisabled={false}
-                         parent={{value: 1}}
-                         options={roles}
-                         fieldName="Armazém"
-                         control={control}
-                         isMulti={false}
-                         isRequired={false}
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Peça"
+                                fieldNameObject="name"
+                                isDisabled={false}
+                                register={register}
+                                type="text"
+                                placeholder="Insira o nome da Peça"
+                            />
+                        </Box>
 
-                       />
-                    </Box>
-                    <Box mb={5}>
-                       <CustomFormControlSelect 
-                         errors={errors}
-                         fieldNameObject="typeOf"
-                         isDisabled={false}
-                         parent={{value: 1}}
-                         options={roles}
-                         fieldName="Marca"
-                         control={control}
-                         isMulti={false}
-                       />
-                    </Box>
-                    <Box mb={5}>
-                       <CustomFormControlSelect 
-                         errors={errors}
-                         fieldNameObject="category"
-                         isDisabled={false}
-                         parent={{value: 1}}
-                         options={roles}
-                         fieldName="Categoria"
-                         control={control}
-                         isMulti={false}
-                       />
-                    </Box>
-                    <Box mb={5}>
-                       <CustomFormControlSelect 
-                         errors={errors}
-                         fieldNameObject="subcategory"
-                         isDisabled={false}
-                         parent={{value: 1}}
-                         options={roles}
-                         fieldName="Sub-Categoria"
-                         control={control}
-                         isMulti={false}
-                       />
-                    </Box>
-                    <Box mb={5}>
-                       <CustomFormControlSelect 
-                         errors={errors}
-                         fieldNameObject="shipping"
-                         isDisabled={false}
-                         parent={{value: 1}}
-                         options={roles}
-                         fieldName="embarcação"
-                         control={control}
-                         isRequired={false}
+                        <Box mb={5}>
+                            <CustomFormControlTextArea
+                                errors={errors}
+                                fieldName="Descrição"
+                                fieldNameObject="description"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                placeholder="Descrição"
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Preço"
+                                fieldNameObject="price"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                type="number"
+                                placeholder="Insira o preço aqui"
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Marca"
+                                fieldNameObject="brand_name"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                type="text"
+                                placeholder="Insira o nome da marca da peça"
+                            />
 
-                         isMulti={false}
-                       />
-                    </Box>
-                    <Box mb={5}>
-                       <CustomFormControlSelect 
-                         errors={errors}
-                         fieldNameObject="transport"
-                         isDisabled={false}
-                         parent={{value: 1}}
-                         options={roles}
-                         fieldName="Transporte"
-                         control={control}
-                         isMulti={false}
-                         isRequired={false}
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlSelect
+                                errors={errors}
+                                fieldNameObject="supplierId"
+                                isDisabled={false}
+                                parent={{ value: 1 }}
+                                options={supplierData}
+                                fieldName="Fornecedor da Peça"
+                                control={control}
+                                isMulti={false}
+                                isRequired={false}
 
-                       />
-                    </Box>
-                    <Box mb={5}>
-                       <CustomFormControlSelect 
-                         errors={errors}
-                         fieldNameObject="state"
-                         isDisabled={false}
-                         parent={{value: 1}}
-                         options={roles}
-                         fieldName="Estado"
-                         control={control}
-                         isMulti={false}
-                       />
-                    </Box>
-                    <Box mb={5}>
-                        <CustomFormControlInput 
-                            errors={errors}
-                            fieldName="Código"
-                            fieldNameObject="code"
-                            isDisabled={false}
-                            register={register}
-                            isRequired={false}
-                            type="text"
-                            placeholder="Insira o codigo da peça"
-                        />
-                    </Box>
-                    <Box mb={5}>
-                        <CustomFormControlInput 
-                            errors={errors}
-                            fieldName="Quantidade"
-                            fieldNameObject="quantity"
-                            isDisabled={false}
-                            register={register}
-                            isRequired={false}
-                            type="text"
-                            placeholder="Insira a quantidade de peças"
-                        />
-                    </Box>
-                    <Box mb={5}>
-                        <CustomFormControlInput 
-                            errors={errors}
-                            fieldName="Nº Peça"
-                            fieldNameObject="number_piece"
-                            isDisabled={false}
-                            register={register}
-                            isRequired={false}
-                            type="text"
-                            placeholder="Insira o numero da peça"
-                        />
-                    </Box>
-                    <Box mb={5}>
-                        <CustomFormControlInput 
-                            errors={errors}
-                            fieldName="IMPA"
-                            fieldNameObject="number_maritm"
-                            isDisabled={false}
-                            register={register}
-                            isRequired={false}
-                            type="text"
-                            placeholder="Insira o numero marítimo aqui..."
-                        />
-                    </Box>
-                    <Box mb={5}>
-                        <CustomFormControlInput 
-                            errors={errors}
-                            fieldName="BL"
-                            fieldNameObject="invoice_number"
-                            isDisabled={false}
-                            register={register}
-                            type="text"
-                            isRequired={false}
-                            placeholder="Insira o numero da factura aqui..."
-                        />
-                    </Box>
-                    <Box mt={5}>
-                        <Button sx={{ maxWidth: "40%", height:"40px" }} mb={5} variant="contained">
-                            Cadastrar
-                        </Button>
-                    </Box >
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlSelect
+                                errors={errors}
+                                fieldNameObject="warehouseId"
+                                isDisabled={false}
+                                parent={{ value: 1 }}
+                                options={[{ value: "1a", label: "AM1" }, { value: 2, label: "AM2" }]}
+                                fieldName="Armazém"
+                                control={control}
+                                isMulti={false}
+                                isRequired={false}
+
+                            />
+                        </Box>
+
+
+                        <Box mb={5}>
+                            <CustomFormControlSelect
+                                errors={errors}
+                                fieldNameObject="categoryId"
+                                isDisabled={false}
+                                parent={{ value: 1 }}
+                                options={categoryData}
+                                fieldName="Categoria"
+                                control={control}
+                                isMulti={false}
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlSelect
+                                errors={errors}
+                                fieldNameObject="subCategoryId"
+                                isDisabled={false}
+                                parent={{ value: 1 }}
+                                options={subCategoryData}
+
+                                fieldName="Sub-Categoria"
+                                control={control}
+                                isMulti={false}
+                            />
+                        </Box>
+
+                        <Box mb={5}>
+                            <CustomFormControlSelect
+                                errors={errors}
+                                fieldNameObject="transportId"
+                                isDisabled={false}
+                                parent={{ value: 1 }}
+                                options={transportData}
+                                fieldName="Transporte"
+                                control={control}
+                                isMulti={false}
+                                isRequired={false}
+
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlSelect
+                                errors={errors}
+                                fieldNameObject="state"
+                                isDisabled={false}
+                                parent={{ value: 1 }}
+                                options={[{ value: "Encomendada", label: "Encomendada" }, { value: "Disponivel", label: "Disponível" }]}
+                                fieldName="Estado"
+                                control={control}
+                                isMulti={false}
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Quantidade"
+                                fieldNameObject="quantity"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                type="text"
+                                placeholder="Insira a quantidade de peças"
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Código"
+                                fieldNameObject="code"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                type="text"
+                                placeholder="Insira o codigo da peça"
+                            />
+                        </Box>
+
+                        <Box mt={5}>
+                            <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
+                                Cadastrar
+                            </Button>
+                        </Box >
+                    </form>
                 </Container >
             </Container >
 

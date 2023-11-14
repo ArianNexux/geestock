@@ -1,6 +1,6 @@
 import { FormErrorMessage, FormControl, Textarea } from "@chakra-ui/react"
 import LabelForm from "../LabelForm"
-import { REQUIRED_FIELD } from "../../utils/constants.ts"
+import { REQUIRED_FIELD } from "../../utils/constants"
 
 export default function CustomFormControlTextArea({
     errors,

@@ -2,7 +2,7 @@ import { FormErrorMessage, FormControl } from "@chakra-ui/react"
 import { Controller } from "react-hook-form";
 import Select from "react-select"
 import LabelForm from "../LabelForm"
-import { REQUIRED_FIELD } from "../../utils/constants.ts"
+import { REQUIRED_FIELD } from "../../utils/constants"
 
 export default function CustomFormControlSelect({
     errors,

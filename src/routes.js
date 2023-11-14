@@ -23,6 +23,10 @@ import FormShipping from './pages/Shipping/FormShipping';
 import SubcategoryPage from './pages/Subcategories/SubategoriesPage';
 import FormSubcategory from './pages/Subcategories/FormSubcategories';
 import RequestsForMe from './pages/Requests/RequestsForMe';
+import OrderPage from './pages/Order/OrderPage';
+import FormOrder from './pages/Order/FormOrder';
+import SupplierPage from './pages/Supplier/SupplierPage';
+import FormSupplier from './pages/Supplier/FormSupplier';
 
 // ----------------------------------------------------------------------
 
@@ -49,6 +53,10 @@ export default function Router() {
         { path: 'subcategoria/cadastrar', element: <FormSubcategory /> },
         { path: 'transporte', element: <ShippingPage /> },
         { path: 'transporte/cadastrar', element: <FormShipping /> },
+        { path: 'encomenda', element: <OrderPage /> },
+        { path: 'encomenda/cadastrar', element: <FormOrder /> },
+        { path: 'fornecedor', element: <SupplierPage /> },
+        { path: 'fornecedor/cadastrar', element: <FormSupplier /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],

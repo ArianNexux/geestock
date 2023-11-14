@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { REQUIRED_FIELD } from "../../utils/constants.ts";
+import { REQUIRED_FIELD } from "../../utils/constants";
 
 export const UserSchema = z.object({
     name: z.string().nonempty(REQUIRED_FIELD),

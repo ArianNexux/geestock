@@ -26,7 +26,7 @@ const navConfig = [
     title: 'Requisições',
     path: '/dashboard/requisicao',
     icon: iconPng('pedido'),
-  }, 
+  },
   {
     title: 'Notas de Entrega',
     path: '/dashboard/nota-entrega',
@@ -41,6 +41,16 @@ const navConfig = [
     title: 'Categorias',
     path: '/dashboard/categoria',
     icon: iconPng('categorizacao'),
+  },
+  {
+    title: 'Encomendas',
+    path: '/dashboard/encomenda',
+    icon: iconPng('caixa-de-entrega'),
+  },
+  {
+    title: 'Fornecedores',
+    path: '/dashboard/fornecedor',
+    icon: iconPng('encomenda-expressa'),
   },
   {
     title: 'Sub-Categorias',
