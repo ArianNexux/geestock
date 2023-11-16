@@ -7,7 +7,10 @@ export const UserSchema = z.object({
     brand_name: z.string().nonempty(REQUIRED_FIELD),
     code: z.string().nonempty(REQUIRED_FIELD),
     quantity: z.string().nonempty(REQUIRED_FIELD),
+    min: z.string().nonempty(REQUIRED_FIELD),
+    target: z.string().nonempty(REQUIRED_FIELD),
     price: z.string().nonempty(REQUIRED_FIELD),
+    locationInWarehouse: z.string().nonempty(REQUIRED_FIELD),
     supplierId: z.object({
         label: z.string(),
         value: z.string()

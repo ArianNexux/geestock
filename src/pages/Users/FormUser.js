@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { Input } from '@chakra-ui/react'
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 
@@ -21,6 +22,8 @@ import CustomFormControlInput from '../../components/CustomFormControlInput';
 // components
 import Iconify from '../../components/iconify';
 import { UserSchema } from './schema.ts';
+import { Toast } from '../../components/Toast';
+import api from '../../utils/api';
 
 export default function FormUser() {
     
@@ -38,15 +41,48 @@ export default function FormUser() {
     resolver: zodResolver(UserSchema),
   });
     const roles = [
-        {label:"Armazéns", value:1},
-        {label:"Peças", value:2},
-        {label:"Requisições", value:3},
-        {label:"Ultilizadores", value:4},
-        {label:"Categorias", value:5},
-        {label:"Alertas", value:6},
-        {label:"Transporte", value:7},
-        {label:"Nota de Entrega", value:8},
+        {label:"Armazéns", value:"1"},
+        {label:"Peças", value:"2"},
+        {label:"Requisições", value:"3"},
+        {label:"Ultilizadores", value:"4"},
+        {label:"Categorias", value:"5"},
+        {label:"Alertas", value:"6"},
+        {label:"Transporte", value:"7"},
+        {label:"Nota de Entrega", value:"8"},
     ]
+    const password = watch("password")
+    const confirmPassword = watch("confirmPassword")
+    const { addToast } = Toast()
+    const navigate = useNavigate()
+    const onSubmit = async (data) => {
+        try {
+            if(password !== confirmPassword){
+                addToast({
+                    title: "As senhas devem ser iguais",
+                    status: "warning"
+                })
+            } else {
+                const response = await api.post("/users", {
+                    ...data,
+                })
+                console.log()
+                if (response.status === 201 || response.status === 200) {
+                    addToast({
+                        title: "Usuário cadastrado com sucesso",
+                        status: "success"
+                    })
+                    navigate("/dashboard/usuario")
+                } else {
+                    addToast({
+                        title: "Ocorreu um erro ao cadastrar o usuario",
+                        status: "warning"
+                    })
+                }
+            }
+        } catch (e) {
+            console.log("Erro", e)
+        }
+    }
     return (
         <>
             <Helmet>
@@ -70,6 +106,8 @@ export default function FormUser() {
                     <Typography variant="body2" gutterBottom>Cadastrar utilizadores</Typography>
                 </Stack>
                 <Container sx={{ backgroundColor: "white", width: "100%", padding: "40px" }} display="flex" flexDirection="column" alignContent="space-between">
+                <form onSubmit={handleSubmit(onSubmit)}>
+
                     <Box mb={5}>
                         <CustomFormControlInput 
                             errors={errors}
@@ -96,11 +134,11 @@ export default function FormUser() {
                         <CustomFormControlInput 
                             errors={errors}
                             fieldName="Função"
-                            fieldNameObject="functionOf"
+                            fieldNameObject="position"
                             isDisabled={false}
                             register={register}
                             type="text"
-                            placeholder="Insira o função do utilizador aqui"
+                            placeholder="Insira a função do utilizador aqui"
                         />
                     </Box>
                     <Box mb={5}>
@@ -129,17 +167,17 @@ export default function FormUser() {
                         <CustomFormControlInput 
                             errors={errors}
                             fieldName="Confirmar senha"
-                            fieldNameObject="password"
+                            fieldNameObject="confirmPassword"
                             isDisabled={false}
                             register={register}
                             type="password"
-                            placeholder="Insira a senha aqui"
+                            placeholder="Insira novamente a senha aqui"
                         />
                     </Box>
                     <Box mb={5}>
                        <CustomFormControlSelect 
                          errors={errors}
-                         fieldNameObject="typeDocument"
+                         fieldNameObject="role"
                          isDisabled={false}
                          parent={{value: 1}}
                          options={roles}
@@ -149,10 +187,11 @@ export default function FormUser() {
                        />
                     </Box>
                     <Box mt={5}>
-                        <Button sx={{ maxWidth: "40%", height:"40px" }} mb={5} variant="contained">
+                        <Button sx={{ maxWidth: "40%", height:"40px" }} mb={5} type="submit" variant="contained">
                             Cadastrar
                         </Button>
                     </Box >
+                    </form>
                 </Container >
             </Container >
 

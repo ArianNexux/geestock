@@ -13,6 +13,7 @@ import {
     Box
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@chakra-ui/react'
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomFormControlSelect from '../../components/CustomFormControlSelect';
@@ -20,8 +21,10 @@ import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 import CustomFormControlInput from '../../components/CustomFormControlInput';
 // components
 import Iconify from '../../components/iconify';
-import { UserSchema } from './schema.ts';
+import { ShippingSchema } from './schema.ts';
 import CustomFormControlTextArea from '../../components/CustomFormControlTextArea';
+import { Toast } from '../../components/Toast';
+import api from '../../utils/api';
 
 export default function FormShipping() {
     
@@ -36,7 +39,7 @@ export default function FormShipping() {
     setValue,
     clearErrors,
   } = useForm({
-    resolver: zodResolver(UserSchema),
+    resolver: zodResolver(ShippingSchema),
   });
     const roles = [
         {label:"Armazéns", value:1},
@@ -48,6 +51,26 @@ export default function FormShipping() {
         {label:"Transporte", value:7},
         {label:"Nota de Entrega", value:8},
     ]
+    const { addToast } = Toast()
+    const navigate = useNavigate()
+    const onSubmit = async (data) => {
+  
+        try {
+            const response = await api.post("/transport", {
+                ...data,
+
+            })
+            if (response.status === 201) {
+                addToast({
+                    title: "Transporte cadastrado com sucesso",
+                    status: "success"
+                })
+                navigate("/dashboard/transporte")
+            }
+        } catch (e) {
+            console.log("Erro", e)
+        }
+    }
     return (
         <>
             <Helmet>
@@ -70,6 +93,7 @@ export default function FormShipping() {
                 <Stack>
                     <Typography variant="body2" gutterBottom>Cadastrar Transporte</Typography>
                 </Stack>
+                <form  onSubmit={handleSubmit(onSubmit)}>
                 <Container sx={{ backgroundColor: "white", width: "100%", padding: "40px" }} display="flex" flexDirection="column" alignContent="space-between">
                 <Box mb={5}>
                         <CustomFormControlInput 
@@ -94,11 +118,12 @@ export default function FormShipping() {
                         />
                     </Box>
                     <Box mt={5}>
-                        <Button sx={{ maxWidth: "40%", height:"40px" }} mb={5} variant="contained">
+                        <Button sx={{ maxWidth: "40%", height:"40px" }} mb={5} type="submit" variant="contained">
                             Cadastrar
                         </Button>
                     </Box >
                 </Container >
+                </form>
             </Container >
 
         </>

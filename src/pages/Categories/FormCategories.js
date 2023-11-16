@@ -12,15 +12,19 @@ import {
     TextField,
     Box
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
 import { useForm } from 'react-hook-form';
 import { Input } from '@chakra-ui/react'
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomFormControlSelect from '../../components/CustomFormControlSelect';
+import { Toast } from '../../components/Toast'
 
 import CustomFormControlInput from '../../components/CustomFormControlInput';
 // components
 import Iconify from '../../components/iconify';
-import { UserSchema } from './schema.ts';
+import { CategorySchema } from './schema.ts';
+import api from '../../utils/api';
 
 export default function FormCategory() {
     
@@ -35,8 +39,9 @@ export default function FormCategory() {
     setValue,
     clearErrors,
   } = useForm({
-    resolver: zodResolver(UserSchema),
+    resolver: zodResolver(CategorySchema),
   });
+  const { addToast } = Toast()
     const roles = [
         {label:"Armazéns", value:1},
         {label:"Peças", value:2},
@@ -47,6 +52,25 @@ export default function FormCategory() {
         {label:"Transporte", value:7},
         {label:"Nota de Entrega", value:8},
     ]
+    const navigate = useNavigate()
+    const onSubmit = async (data) => {
+  
+        try {
+            const response = await api.post("/category", {
+                ...data,
+
+            })
+            if (response.status === 201) {
+                addToast({
+                    title: "Categoria cadastrada com sucesso",
+                    status: "success"
+                })
+                navigate("/dashboard/categoria")
+            }
+        } catch (e) {
+            console.log("Erro", e)
+        }
+    }
     return (
         <>
             <Helmet>
@@ -69,6 +93,7 @@ export default function FormCategory() {
                 <Stack>
                     <Typography variant="body2" gutterBottom>Cadastrar Peças</Typography>
                 </Stack>
+                <form onSubmit={handleSubmit(onSubmit)}>
                 <Container sx={{ backgroundColor: "white", width: "100%", padding: "40px" }} display="flex" flexDirection="column" alignContent="space-between">
                     <Box mb={5}>
                         <CustomFormControlInput 
@@ -93,11 +118,12 @@ export default function FormCategory() {
                         />
                     </Box>
                     <Box mt={5}>
-                        <Button sx={{ maxWidth: "40%", height:"40px" }} mb={5} variant="contained">
+                        <Button sx={{ maxWidth: "40%", height:"40px" }} type="submit" mb={5} variant="contained">
                             Cadastrar
                         </Button>
                     </Box >
                 </Container >
+                    </form>
             </Container >
 
         </>

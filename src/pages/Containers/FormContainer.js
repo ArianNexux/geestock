@@ -44,18 +44,19 @@ export default function FormContainer() {
     const typeWarehouse = watch("type")
     useEffect(() => {
 
-        setValue("type", { label: "Fixo", value: "fixo" })
+        setValue("type", { label: "Armazém", value: "Armazém" })
 
     }, [])
     useEffect(() => {
-        setSchema(typeWarehouse?.value === "fixo" ? WarehouseSchemaFixed : WarehouseSchemaNonFixed)
+        console.log(typeWarehouse)
+        setSchema(typeWarehouse?.value === "Armazém" ? WarehouseSchemaFixed : WarehouseSchemaNonFixed)
+        console.log(typeWarehouse)
     }, [typeWarehouse])
 
     const { addToast } = Toast()
 
     const onSubmit = async (data) => {
-        console.log(errors)
-        console.log(data)
+  
         try {
             const response = await api.post("/warehouse", {
                 ...data,
@@ -113,7 +114,7 @@ export default function FormContainer() {
                                 fieldNameObject="type"
                                 isDisabled={false}
                                 parent={{ value: 1 }}
-                                options={[{ value: "fixo", label: "Fixo" }, { value: "movel", label: "Móvel" }]}
+                                options={[{ value: 1, label: "Armazém" }, { value: 2, label: "Embarcação" }]}
                                 fieldName="Tipo de Armazém"
                                 control={control}
                                 isMulti={false}
@@ -130,7 +131,7 @@ export default function FormContainer() {
                             />
                         </Box>
                         {
-                            typeWarehouse?.value === "fixo" ? (
+                            typeWarehouse?.value === 1 ? (
                                 <>
                                     <Box mb={5}>
                                         <CustomFormControlInput
@@ -203,17 +204,7 @@ export default function FormContainer() {
                                                 placeholder="Insira a bandeira aqui"
                                             />
                                         </Box>
-                                        <Box mb={5}>
-                                            <CustomFormControlInput
-                                                errors={errors}
-                                                fieldName="Tipo de Embarcação"
-                                                fieldNameObject="embarcationType"
-                                                isDisabled={false}
-                                                register={register}
-                                                type="text"
-                                                placeholder="Insira o tipo de embarcação aqui"
-                                            />
-                                        </Box>
+                          
                                     </>
                                 )
                         }

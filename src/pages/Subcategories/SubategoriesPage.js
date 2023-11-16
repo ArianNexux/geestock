@@ -1,8 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 // @mui
 import {
   Card,
@@ -24,6 +25,9 @@ import {
   TablePagination,
   TextField
 } from '@mui/material';
+import api from '../../utils/api';
+import { GET_SUBCATEGORY } from '../../utils/endpoints';
+
 // components
 import Label from '../../components/label/Label';
 import Iconify from '../../components/iconify';
@@ -36,10 +40,9 @@ import USERLIST from '../../_mock/user';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
+  { id: 'code', label: 'Código', alignRight: false },
   { id: 'name', label: 'Nome', alignRight: false },
-  { id: 'company', label: 'Código', alignRight: false },
-  { id: 'company', label: 'Categoria', alignRight: false },
-
+  { id: 'categoryName', label: 'Categoria', alignRight: false },
   { id: '' },
 ];
 
@@ -88,6 +91,16 @@ export default function SubcategoryPage() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [data, setData] = useState([])
+  useEffect(() => {
+
+      const getData = async () => {
+          const responseCategories = await api.get(GET_SUBCATEGORY)
+          setData(responseCategories.data)
+      }
+      getData()
+  }, [])
+
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -143,7 +156,7 @@ export default function SubcategoryPage() {
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
 
@@ -188,8 +201,9 @@ export default function SubcategoryPage() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                  {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, name, code, category: { name : categoryName}} = row;
+                    console.log("NEW",categoryName)
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -198,20 +212,14 @@ export default function SubcategoryPage() {
                           <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
                         </TableCell>
 
-                        <TableCell component="th" scope="row" padding="none">
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            <Typography variant="subtitle2" noWrap>
+                        <TableCell align="left">{code}</TableCell>
+                        <TableCell align="left">
                               {name}
-                            </Typography>
-                          </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
-
-                        <TableCell align="left">{role}</TableCell>
-
+                        <TableCell align="left">{categoryName}</TableCell>
         
-                        <TableCell align="right">
+                        <TableCell align="left">
                           <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>

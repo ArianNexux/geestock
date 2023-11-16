@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import {
@@ -32,6 +32,7 @@ import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 import USERLIST from '../../_mock/user';
+import api from '../../utils/api';
 
 // ----------------------------------------------------------------------
 
@@ -78,6 +79,7 @@ export default function UserPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
+  const [data, setData] = useState([]);
 
   const [order, setOrder] = useState('asc');
 
@@ -143,10 +145,22 @@ export default function UserPage() {
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
 
-  const isNotFound = !filteredUsers.length && !!filterName;
+  const isNotFound = !data.length && !!filterName;
 
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await api.get("/users")
+        setData(response.data)
+        console.log(response.data)
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [])
   return (
     <>
       <Helmet>
@@ -188,8 +202,8 @@ export default function UserPage() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                  {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, name, position, company } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -211,11 +225,12 @@ export default function UserPage() {
 
                         <TableCell align="left">{company}</TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
+                        
+                      <TableCell align="left">{position}</TableCell>
 
 
                         <TableCell align="left">
-                          <Label color={(status === 'Inactivo' && 'error') || 'success'}>{sentenceCase(status)}</Label>
+                          <Label color={(true === 'Inactivo' && 'error') || 'success'}>{sentenceCase('true')}</Label>
                         </TableCell>
 
                         <TableCell align="right">

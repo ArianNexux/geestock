@@ -91,6 +91,8 @@ export default function FormPieces() {
                 ...data,
                 price: Number(data.price),
                 quantity: Number(data.quantity),
+                target: Number(data.target),
+                min: Number(data.min),
                 warehouseId: warehouseId.value,
                 supplierId: supplierId.value,
                 transportId: transportId.value,
@@ -155,6 +157,17 @@ export default function FormPieces() {
                                 register={register}
                                 isRequired={false}
                                 placeholder="Descrição"
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlTextArea
+                                errors={errors}
+                                fieldName="Localização da Peça"
+                                fieldNameObject="locationInWarehouse"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                placeholder="Breve descrição da Localização da Peça"
                             />
                         </Box>
                         <Box mb={5}>
@@ -274,6 +287,30 @@ export default function FormPieces() {
                                 isRequired={false}
                                 type="text"
                                 placeholder="Insira a quantidade de peças"
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Target"
+                                fieldNameObject="target"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                type="text"
+                                placeholder="Insira a target de peças"
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Quantidade Mínima"
+                                fieldNameObject="min"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                type="text"
+                                placeholder="Insira a quantidade minima de peças"
                             />
                         </Box>
                         <Box mb={5}>

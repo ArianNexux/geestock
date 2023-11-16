@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import {
@@ -32,6 +32,8 @@ import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 import USERLIST from '../../_mock/user';
+import api from '../../utils/api';
+import { GET_CATEGORY } from '../../utils/endpoints';
 
 // ----------------------------------------------------------------------
 
@@ -88,6 +90,15 @@ export default function CategoryPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const [data, setData] = useState([])
+  useEffect(() => {
+
+      const getData = async () => {
+          const responseCategories = await api.get(GET_CATEGORY)
+          setData(responseCategories.data)
+      }
+      getData()
+  }, [])
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
@@ -142,7 +153,7 @@ export default function CategoryPage() {
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
 
@@ -187,8 +198,8 @@ export default function CategoryPage() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                  {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, name, code } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -205,7 +216,7 @@ export default function CategoryPage() {
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{code}</TableCell>
 
 
                         <TableCell align="right">
