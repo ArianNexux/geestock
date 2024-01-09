@@ -2,8 +2,9 @@ import { Box } from '@chakra-ui/react';
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 // @mui
 import {
   Card,
@@ -33,13 +34,16 @@ import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 import USERLIST from '../../_mock/user';
+import api from '../../utils/api';
+import { AppContext } from '../../context/context';
+import { Toast } from '../../components/Toast';
+import { ModalConfirmRequest } from '../../components/modal/modalConfirmRequest';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome da Peça', alignRight: false },
-  { id: 'company', label: 'Barco', alignRight: false },
-  { id: 'role', label: 'Quantidade', alignRight: false },
+  { id: 'company', label: 'Armazem', alignRight: false },
   { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
@@ -79,6 +83,7 @@ export default function RequestsForMe() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
+  const [currentId, setCurrentId] = useState("0")
 
   const [order, setOrder] = useState('asc');
 
@@ -90,8 +95,12 @@ export default function RequestsForMe() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const handleOpenMenu = (event) => {
+  const { addToast } = Toast()
+
+  const handleOpenMenu = (event, id) => {
+    console.log(id)
     setOpen(event.currentTarget);
+    setCurrentId(id)
   };
 
   const handleCloseMenu = () => {
@@ -141,7 +150,23 @@ export default function RequestsForMe() {
     setPage(0);
     setFilterName(event.target.value);
   };
+  const [data, setData] = useState([])
+  const [isOpen, setIsOpen] = useState(false)
+  const { userData } = useContext(AppContext)
 
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const url = `/request/warehouseincomming/${userData.data.warehouse.id}`;
+        const response = await api.get(url)
+        setData(response.data)
+        console.log("LOGAR", response.data)
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [])
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
   const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
@@ -155,28 +180,28 @@ export default function RequestsForMe() {
       </Helmet>
 
       <Container>
-          <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
+        <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
            Início > Requisições > Requisições Para mim
-          </Typography>
+        </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
             Requisições para mim
           </Typography>
-        
-            <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
-              Enviar Requisição
-            </Button>
+
+          <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+            Enviar Requisição
+          </Button>
         </Stack>
-   
+
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
           <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
           <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
- 
+
         <Card>
-    
+
           <Scrollbar>
             <TableContainer sx={{ minWidth: 900 }}>
               <Table>
@@ -190,41 +215,41 @@ export default function RequestsForMe() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
-                    const selectedUser = selected.indexOf(name) !== -1;
+                  {
+                    data.map((row) => {
 
-                    return (
-                      <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                        </TableCell>
+                      const { id, state, name, warehouseOutcomming: { name: warehouseName } } = row;
 
-                        <TableCell component="th" scope="row" padding="none">
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            <Typography variant="subtitle2" noWrap>
-                              {name}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
+                      return (
+                        <TableRow hover key={id} tabIndex={-1} role="checkbox" >
+                          <TableCell padding="checkbox">
+                            <Checkbox onChange={(event) => handleClick(event, "name")} />
+                          </TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
+                          <TableCell component="th" scope="row" padding="none">
+                            <Stack direction="row" alignItems="center" spacing={2}>
+                              <Typography variant="subtitle2" noWrap>
+                                {name}
+                              </Typography>
+                            </Stack>
+                          </TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
+                          <TableCell align="left">{warehouseName}</TableCell>
 
 
-                        <TableCell align="left">
-                          <Label color={(status === 'Inactivo' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                        </TableCell>
 
-                        <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
-                            <Iconify icon={'eva:more-vertical-fill'} />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                          <TableCell align="left">
+                            <Label color={(state === 'Em analise' && 'error') || 'success'}>{sentenceCase(state)}</Label>
+                          </TableCell>
+
+                          <TableCell align="right">
+                            <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id); }}>
+                              <Iconify icon={'eva:more-vertical-fill'} />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   {emptyRows > 0 && (
                     <TableRow style={{ height: 53 * emptyRows }}>
                       <TableCell colSpan={6} />
@@ -289,7 +314,9 @@ export default function RequestsForMe() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem onClick={(e) => {
+          setIsOpen(true)
+        }}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Aceitar
         </MenuItem>
@@ -299,6 +326,11 @@ export default function RequestsForMe() {
           Rejeitar
         </MenuItem>
       </Popover>
+      <ModalConfirmRequest
+        setIsOpen={setIsOpen}
+        isOpen={isOpen}
+        id={currentId}
+      />
     </>
   );
 }

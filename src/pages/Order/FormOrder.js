@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import {
@@ -19,6 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import CustomFormControlTextArea from '../../components/CustomFormControlTextArea';
 import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 
+import { ModalInsertPiece } from '../../components/modal/modalInsertPiece';
 import CustomFormControlInput from '../../components/CustomFormControlInput';
 // components
 import Iconify from '../../components/iconify';
@@ -26,6 +27,8 @@ import { OrderSchema } from './schema.ts';
 import api from '../../utils/api'
 import { Toast } from '../../components/Toast';
 import { GET_CATEGORY, GET_SUBCATEGORY, GET_PIECES } from '../../utils/endpoints';
+import TableRequest from '../../components/TableRequest';
+import { AppContext } from '../../context/context';
 
 
 export default function FormOrder() {
@@ -49,10 +52,14 @@ export default function FormOrder() {
     const pieceId = watch("pieceId")
 
     const [piecesData, setPiecesData] = useState([])
+    const [isOpen, setIsOpen] = useState(false)
+    const [rows, setRows] = useState([])
+    const { userData } = useContext(AppContext)
+
     useEffect(() => {
-        console.log("Ola mundo")
         const getData = async () => {
-            const responsePiece = await api.get(GET_PIECES)
+            const url = userData.data?.position === "2" ? `/piece/warehouse/${userData.data.warehouse.id}` : `/piece`;
+            const responsePiece = await api.get(url)
             setPiecesData(responsePiece.data.map(e => ({
                 value: e.id,
                 label: e.name
@@ -61,12 +68,21 @@ export default function FormOrder() {
         getData()
     }, [])
     const onSubmit = async (data) => {
-  
+        console.log(
+            rows.map(r => ({
+                pieceId: r.piece.value,
+                quantity: r.quantity,
+                price: r.price
+            }))
+        )
         try {
             const response = await api.post("/order", {
                 ...data,
-                quantity: Number(data.quantity),
-                pieceId: pieceId.value,
+                request: rows.map(r => ({
+                    pieceId: r.piece.value,
+                    quantity: r.quantity,
+                    price: r.price
+                }))
 
             })
             if (response.status === 201) {
@@ -88,7 +104,7 @@ export default function FormOrder() {
 
             <Container>
                 <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
-                Início > Encomendas > Cadastrar
+                    Início {'>'} Encomendas {'>'} Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
                     <Button sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
@@ -128,30 +144,42 @@ export default function FormOrder() {
                             />
                         </Box>
                         <Box mb={5}>
-                            <CustomFormControlSelect
-                                errors={errors}
-                                fieldNameObject="pieceId"
-                                isDisabled={false}
-                                parent={{ value: 1 }}
-                                options={piecesData}
-                                fieldName="Peça"
-                                control={control}
-                                isMulti={false}
-                                isRequired={false}
-                            />
-                        </Box>
-                        <Box mb={5}>
                             <CustomFormControlInput
                                 errors={errors}
-                                fieldName="Quantidade"
-                                fieldNameObject="quantity"
+                                fieldName="Nº da Encomenda"
+                                fieldNameObject="number_order"
                                 isDisabled={false}
                                 register={register}
                                 isRequired={false}
-                                type="number"
-                                placeholder="Insira a quantidade aqui"
+                                placeholder="Nº da Encomenda"
                             />
                         </Box>
+
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Referencia"
+                                fieldNameObject="reference"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                type="text"
+                                placeholder="Insira a referência aqui"
+                            />
+                        </Box>
+                        <Button
+                            sx={{ maxWidth: "40%", height: "40px" }}
+                            mb={10}
+                            variant="contained"
+                            onClick={() => { setIsOpen(true) }}
+                            type="button"
+                        >
+                            Adicionar Peça
+                        </Button>
+                        <TableRequest
+                            hasPrice
+                            rows={rows}
+                        />
 
                         <Box mt={5}>
                             <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
@@ -161,7 +189,14 @@ export default function FormOrder() {
                     </form>
                 </Container >
             </Container >
-
+            <ModalInsertPiece
+                rows={rows}
+                setRows={setRows}
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                hasPrice
+                dataPieces={piecesData}
+            />
         </>
     )
 

@@ -2,7 +2,7 @@ import { Box } from '@chakra-ui/react';
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import {
@@ -33,13 +33,14 @@ import Scrollbar from '../../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 import USERLIST from '../../_mock/user';
+import api from '../../utils/api';
+import { AppContext } from '../../context/context';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Nome da Peça', alignRight: false },
+  { id: 'name', label: 'Nome da Requisição', alignRight: false },
   { id: 'company', label: 'Armazém', alignRight: false },
-  { id: 'role', label: 'Quantidade', alignRight: false },
   { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
@@ -112,7 +113,22 @@ export default function RequestsPage() {
     }
     setSelected([]);
   };
+  const [data, setData] = useState([])
+  const { userData } = useContext(AppContext)
 
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const url = `/request/warehouseoutcomming/${userData.data.warehouse.id}`;
+        const response = await api.get(url)
+        setData(response.data)
+        console.log("LOGAR", response.data)
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [])
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
     let newSelected = [];
@@ -155,14 +171,14 @@ export default function RequestsPage() {
       </Helmet>
 
       <Container>
-          <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
+        <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
            Início > Requisições
-          </Typography>
+        </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-           Gestão de Requisições
+            Gestão de Requisições
           </Typography>
-          <Box sx={{width:"45%", display:"flex", justifyContent:"space-between"}}>
+          <Box sx={{ width: "45%", display: "flex", justifyContent: "space-between" }}>
             <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/minhas") }} startIcon={<Iconify icon="eva:eye-fill" />}>
               Requisições Para mim
             </Button>
@@ -171,16 +187,16 @@ export default function RequestsPage() {
             </Button>
           </Box>
         </Stack>
-   
+
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
           <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
           <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
- 
+
         <Card>
-    
+
           <Scrollbar>
             <TableContainer sx={{ minWidth: 900 }}>
               <Table>
@@ -194,31 +210,27 @@ export default function RequestsPage() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
-                    const selectedUser = selected.indexOf(name) !== -1;
+                  {data.map((row) => {
+                    const { id, name, quantity, state, warehouseIncomming: { name: warehouseName } } = row;
 
                     return (
-                      <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                        </TableCell>
+                      <TableRow hover key={id} tabIndex={-1} role="checkbox" >
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" noWrap>
-                              {name}
+                              { }
                             </Typography>
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{name}</TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
+                        <TableCell align="left">{warehouseName}</TableCell>
 
 
                         <TableCell align="left">
-                          <Label color={(status === 'Inactivo' && 'error') || 'success'}>{sentenceCase(status)}</Label>
+                          <Label color={(state === 'Em Analise' && 'error') || 'success'}>{sentenceCase(state)}</Label>
                         </TableCell>
 
                         <TableCell align="right">

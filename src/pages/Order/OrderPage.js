@@ -28,17 +28,18 @@ import {
 import Label from '../../components/label/Label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
+import { ModalConfirmOrder } from '../../components/modal/modal';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 import USERLIST from '../../_mock/user';
 import api from '../../utils/api';
 // ----------------------------------------------------------------------
-
 const TABLE_HEAD = [
-  { id: 'description', label: 'Armazém', alignRight: false },
-  { id: 'quantity', label: 'Quantidade', alignRight: false },
+  { id: 'description', label: 'Descrição', alignRight: false },
   { id: 'imbl_awb', label: 'IMBL/AWB', alignRight: false },
+  { id: 'reference', label: 'Referência', alignRight: false },
+  { id: 'actions', label: 'Acção', alignRight: false },
   { id: '' },
 ];
 
@@ -87,7 +88,8 @@ export default function OrderPage() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [id, setId] = useState(0);
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
@@ -165,7 +167,7 @@ export default function OrderPage() {
 
       <Container>
         <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
-           Início > Encomendas
+          Início {'>'} Encomendas
         </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
@@ -199,7 +201,7 @@ export default function OrderPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, description, quantity, imbl_awb: imblAwb } = row;
+                    const { id, description, imbl_awb: imblAwb, state, reference } = row;
                     const selectedUser = selected.indexOf(description) !== -1;
 
                     return (
@@ -210,11 +212,14 @@ export default function OrderPage() {
 
                         <TableCell align="left">{description}</TableCell>
 
-                        <TableCell align="left">{quantity}</TableCell>
                         <TableCell align="left">{imblAwb}</TableCell>
+                        <TableCell align="left">{reference}</TableCell>
 
-
-
+                        <TableCell align="left">
+                          <Button disabled={state !== "Em curso"} onClick={() => { setIsOpen(true); setId(id) }} sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
+                            Confirmar
+                          </Button>
+                        </TableCell>
                         <TableCell align="right">
                           <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
                             <Iconify icon={'eva:more-vertical-fill'} />
@@ -297,6 +302,12 @@ export default function OrderPage() {
           Eliminar
         </MenuItem>
       </Popover>
+
+      <ModalConfirmOrder
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        id={id}
+      />
     </>
   );
 }

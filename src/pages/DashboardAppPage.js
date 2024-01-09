@@ -1,3 +1,4 @@
+import { useContext } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 // @mui
@@ -18,13 +19,15 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
+import { AppContext, AuthContext } from '../context/context';
 
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
   const theme = useTheme();
   const iconPng = (name) => <SvgColor src={`/assets/icons/navbar/${name}.png`} sx={{ width: 1, height: 1 }} />;
-
+  const { userData } = useContext(AppContext)
+  console.log("Vendo o user data aqui:", userData)
   return (
     <>
       <Helmet>
@@ -77,7 +80,7 @@ export default function DashboardAppPage() {
                   fill: 'solid',
                   data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
                 },
-     
+
               ]}
             />
           </Grid>

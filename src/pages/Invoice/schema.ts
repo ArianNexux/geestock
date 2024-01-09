@@ -5,7 +5,7 @@ export const UserSchema = z.object({
     name: z.string().nonempty(REQUIRED_FIELD),
     description: z.string().nonempty(REQUIRED_FIELD),
     brand_name: z.string().nonempty(REQUIRED_FIELD),
-    partNumber: z.string().nonempty(REQUIRED_FIELD),
+    code: z.string().nonempty(REQUIRED_FIELD),
     quantity: z.string().nonempty(REQUIRED_FIELD),
     min: z.string().nonempty(REQUIRED_FIELD),
     target: z.string().nonempty(REQUIRED_FIELD),
@@ -19,7 +19,10 @@ export const UserSchema = z.object({
         label: z.string(),
         value: z.string()
     }),
-
+    transportId: z.object({
+        label: z.string(),
+        value: z.string()
+    }),
     categoryId: z.object({
         label: z.string(),
         value: z.string()

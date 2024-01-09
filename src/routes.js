@@ -1,4 +1,6 @@
 import { Navigate, useRoutes } from 'react-router-dom';
+import { useContext } from 'react';
+
 // layouts
 import DashboardLayout from './layouts/dashboard';
 import SimpleLayout from './layouts/simple';
@@ -27,11 +29,12 @@ import OrderPage from './pages/Order/OrderPage';
 import FormOrder from './pages/Order/FormOrder';
 import SupplierPage from './pages/Supplier/SupplierPage';
 import FormSupplier from './pages/Supplier/FormSupplier';
+import { AppContext } from './context/context';
 
 // ----------------------------------------------------------------------
 
 export default function Router() {
-  const routes = useRoutes([
+  const LoggedRoutes = useRoutes([
     {
       path: '/dashboard',
       element: <DashboardLayout />,
@@ -62,6 +65,14 @@ export default function Router() {
       ],
     },
     {
+      element: <SimpleLayout />,
+      children: [
+        { element: <Navigate to="/dashboard/app" />, index: true },
+        { path: '404', element: <Page404 /> },
+        { path: '*', element: <Navigate to="/404" /> },
+      ],
+    },
+    {
       path: 'login',
       element: <LoginPage />,
     },
@@ -76,8 +87,9 @@ export default function Router() {
     {
       path: '*',
       element: <Navigate to="/404" replace />,
-    },
+    }
   ]);
 
-  return routes;
+
+  return LoggedRoutes;
 }

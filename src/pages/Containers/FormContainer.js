@@ -56,7 +56,8 @@ export default function FormContainer() {
     const { addToast } = Toast()
 
     const onSubmit = async (data) => {
-  
+        console.log(errors)
+        console.log(data)
         try {
             const response = await api.post("/warehouse", {
                 ...data,
@@ -204,7 +205,7 @@ export default function FormContainer() {
                                                 placeholder="Insira a bandeira aqui"
                                             />
                                         </Box>
-                          
+
                                     </>
                                 )
                         }

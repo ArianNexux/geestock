@@ -1,9 +1,11 @@
+import { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { NavLink as RouterLink } from 'react-router-dom';
 // @mui
 import { Box, List, ListItemText } from '@mui/material';
 //
 import { StyledNavItem, StyledNavItemIcon } from './styles';
+import { AppContext } from '../../context/context';
 
 // ----------------------------------------------------------------------
 
@@ -12,11 +14,12 @@ NavSection.propTypes = {
 };
 
 export default function NavSection({ data = [], ...other }) {
+  const { userData } = useContext(AppContext)
   return (
     <Box {...other}>
       <List disablePadding sx={{ p: 1 }}>
         {data.map((item) => (
-          <NavItem key={item.title} item={item} />
+          item.permission.includes(userData.data?.position) && <NavItem key={item.title} item={item} />
         ))}
       </List>
     </Box>

@@ -11,6 +11,7 @@ export default function CustomFormControlInput({
     register,
     placeholder,
     type,
+    width="60%"
 }){
     return (
         <FormControl isInvalid={!!errors[fieldNameObject]}>
@@ -18,7 +19,7 @@ export default function CustomFormControlInput({
                   title={fieldName}  
                   isRequired={isRequired}            
               />
-            <Input isDisabled={isDisabled} placeholder={placeholder} type={type} sx={{ width:"60%", height: "40px", border:"1.5px solid grey", borderRadius: "4px", textIndent:"5px", marginTop:"15px"}} { ...register(fieldNameObject) }/>
+            <Input isDisabled={isDisabled} placeholder={placeholder} type={type} sx={{ width, height: "40px", border:"1.5px solid grey", borderRadius: "4px", textIndent:"5px", marginTop:"15px"}} { ...register(fieldNameObject) }/>
               
         <FormErrorMessage sx={{color:"red"}}>
             {errors[fieldNameObject] && <>{REQUIRED_FIELD}</>}

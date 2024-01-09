@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import api from '../../../utils/api';
 import { AUTH_LOGIN } from '../../../utils/endpoints';
 import { LoginSchema } from './schema.ts';
+import { AppContext, AuthContext } from '../../../context/context';
 import Iconify from '../../../components/iconify';
 import { Toast } from '../../../components/Toast';
 // ----------------------------------------------------------------------
@@ -30,12 +31,15 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const { addToast } = Toast()
   const [showPassword, setShowPassword] = useState(false);
-
+  const { setUserData } = useContext(AppContext)
   const onSubmit = async (data) => {
     try {
 
       const response = await api.post(AUTH_LOGIN, data)
       if (response.status === 200 && response.data?.access_token) {
+        setUserData(response.data)
+        localStorage.setItem('userData', JSON.stringify(response.data))
+        setUserData(response.data)
         navigate('/dashboard', { replace: true });
       } else {
         addToast({

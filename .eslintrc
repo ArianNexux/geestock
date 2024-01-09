@@ -62,6 +62,7 @@
     "react/no-unstable-nested-components": 0,
     "react/function-component-definition": 0,
     "react/jsx-no-constructed-context-values": 0,
+    "no-plusplus": "off",
     "no-unused-vars": [
       1,
       {

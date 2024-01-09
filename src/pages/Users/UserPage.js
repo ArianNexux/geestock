@@ -168,27 +168,27 @@ export default function UserPage() {
       </Helmet>
 
       <Container>
-          <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
+        <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
            Início > Utilizadores
-          </Typography>
+        </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-           Gestão de utilizadores
+            Gestão de utilizadores
           </Typography>
           <Button variant="contained" onClick={() => { navigate("/dashboard/usuario/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
             Cadastrar utilizador
           </Button>
         </Stack>
-   
+
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
           <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
           <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
- 
+
         <Card>
-    
+
           <Scrollbar>
             <TableContainer sx={{ minWidth: 900 }}>
               <Table>
@@ -203,7 +203,7 @@ export default function UserPage() {
                 />
                 <TableBody>
                   {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, position, company } = row;
+                    const { id, name, position, company, email } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -215,7 +215,7 @@ export default function UserPage() {
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             {
-                            /* <Avatar alt={name} src={avatarUrl} /> */
+                              /* <Avatar alt={name} src={avatarUrl} /> */
                             }
                             <Typography variant="subtitle2" noWrap>
                               {name}
@@ -223,10 +223,10 @@ export default function UserPage() {
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{email}</TableCell>
 
-                        
-                      <TableCell align="left">{position}</TableCell>
+
+                        <TableCell align="left">{position}</TableCell>
 
 
                         <TableCell align="left">

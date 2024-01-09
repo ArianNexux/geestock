@@ -22,7 +22,7 @@ import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 import CustomFormControlInput from '../../components/CustomFormControlInput';
 // components
 import Iconify from '../../components/iconify';
-import { UserSchema } from './schema.ts';
+import { UserSchema } from './schema';
 import api from '../../utils/api'
 import { Toast } from '../../components/Toast';
 import { GET_CATEGORY, GET_SUBCATEGORY, GET_SUPPLIER, GET_TRANSPORT } from '../../utils/endpoints';
@@ -96,6 +96,7 @@ export default function FormPieces() {
                 min: Number(data.min),
                 warehouseId: userData.data.warehouse?.id,
                 supplierId: supplierId.value,
+                transportId: transportId.value,
                 categoryId: categoryId.value,
                 subCategoryId: subCategoryId.value,
                 state: state.value
@@ -157,18 +158,6 @@ export default function FormPieces() {
                                 register={register}
                                 isRequired={false}
                                 placeholder="Descrição"
-                            />
-                        </Box>
-                        <Box mb={5}>
-                            <CustomFormControlInput
-                                errors={errors}
-                                fieldName="Part Number"
-                                fieldNameObject="partNumber"
-                                isDisabled={false}
-                                register={register}
-                                isRequired={false}
-                                type="text"
-                                placeholder="Insira o Part Number"
                             />
                         </Box>
                         <Box mb={5}>
@@ -252,10 +241,24 @@ export default function FormPieces() {
                         <Box mb={5}>
                             <CustomFormControlSelect
                                 errors={errors}
+                                fieldNameObject="transportId"
+                                isDisabled={false}
+                                parent={{ value: 1 }}
+                                options={transportData}
+                                fieldName="Transporte"
+                                control={control}
+                                isMulti={false}
+                                isRequired={false}
+
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlSelect
+                                errors={errors}
                                 fieldNameObject="state"
                                 isDisabled={false}
                                 parent={{ value: 1 }}
-                                options={[{ value: "Disponivel", label: "Disponível" }, { value: "Removido", label: "Removido" }]}
+                                options={[{ value: "Encomendada", label: "Encomendada" }, { value: "Disponivel", label: "Disponível" }]}
                                 fieldName="Estado"
                                 control={control}
                                 isMulti={false}
@@ -297,7 +300,18 @@ export default function FormPieces() {
                                 placeholder="Insira a quantidade minima de peças"
                             />
                         </Box>
-
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Código"
+                                fieldNameObject="code"
+                                isDisabled={false}
+                                register={register}
+                                isRequired={false}
+                                type="text"
+                                placeholder="Insira o codigo da peça"
+                            />
+                        </Box>
 
                         <Box mt={5}>
                             <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
