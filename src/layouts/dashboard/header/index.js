@@ -1,3 +1,4 @@
+import { useContext } from 'react'
 import PropTypes from 'prop-types';
 // @mui
 import { styled } from '@mui/material/styles';
@@ -10,6 +11,7 @@ import Iconify from '../../../components/iconify';
 import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
 import NotificationsPopover from './NotificationsPopover';
+import { AppContext, AuthContext } from '../../../context/context';
 
 // ----------------------------------------------------------------------
 
@@ -42,6 +44,8 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
+  const { userData } = useContext(AppContext)
+
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -70,7 +74,7 @@ export default function Header({ onOpenNav }) {
           {
             // <LanguagePopover />
           }
-          <NotificationsPopover />
+          {userData.data?.position === "Administrador" && <NotificationsPopover />}
           <AccountPopover />
         </Stack>
       </StyledToolbar>

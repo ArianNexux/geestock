@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, useContext } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 // @mui
 import {
     Card,
@@ -16,6 +16,9 @@ import {
 import { useForm } from 'react-hook-form';
 import { Input } from '@chakra-ui/react'
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AppContext } from '../../context/context';
+
+
 import CustomFormControlTextArea from '../../components/CustomFormControlTextArea';
 import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 
@@ -44,17 +47,51 @@ export default function FormSupplier() {
         resolver: zodResolver(SupplierSchema),
     });
     const { addToast } = Toast()
+    const { id } = useParams()
+    const { userData } = useContext(AppContext)
+
+    useEffect(() => {
+        const getData = async (data) => {
+            const url = `/supplier/${id}`
+            const response = await api.get(url)
+            console.log("FINAL RESPONSE", response.data)
+            setValue("name", response.data.name)
+            setValue("code", response.data.code)
+        }
+
+        getData()
+    }, [])
 
     const onSubmit = async (data) => {
 
         try {
-            const response = await api.post("/supplier", {
-                ...data
+            let response;
+            const url = id === undefined ? `supplier` : `/supplier/${id}`
+            if (id === undefined || id === '') {
+                response = await api.post(url, {
+                    ...data,
+                    userId: userData.data.id
 
-            })
+                })
+            } else {
+                response = await api.patch(url, {
+                    id,
+                    ...data,
+                    userId: userData.data.id
+
+                })
+            }
             if (response.status === 201) {
                 addToast({
                     title: "Fornecedor cadastrada com sucesso",
+                    status: "success"
+                })
+                navigate("/dashboard/fornecedor")
+            }
+
+            if (response.status === 200) {
+                addToast({
+                    title: "Fornecedor actualizado com sucesso",
                     status: "success"
                 })
                 navigate("/dashboard/fornecedor")

@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { sentenceCase } from 'change-case';
 import { useState, useEffect, useContext } from 'react';
 // @mui
@@ -58,7 +58,7 @@ export default function FormRequests() {
     const { userData } = useContext(AppContext)
 
     const [rows, setRows] = useState([])
-
+    const { id } = useParams()
     useEffect(() => {
         const getData = async () => {
             try {
@@ -98,11 +98,29 @@ export default function FormRequests() {
         setValue("piece", null)
         getData()
     }, [warehouse])
+    useEffect(() => {
+        const getData = async (data) => {
+            const url = `/request/${id}`
+            const response = await api.get(url)
+            console.log("FINAL RESPONSE", response.data)
+            setValue("name", response.data.name)
+            setValue("numberPr", response.data.numberPr)
+            setValue("container", { label: response.data.warehouseIncomming.name, value: response.data.warehouseIdIncomming })
+            setRows(
+                response.data.RequestsPieces.map((e) => ({
+                    quantity: Number(e.quantity),
+                    piece: { label: e.piece.name, value: e.pieceId },
+                    price: Number(e.piece.price)
+                })))
+        }
+
+        getData()
+    }, [])
     const onSubmit = async (data) => {
         console.log(errors)
         console.log(data)
         try {
-            const response = await api.post("/request", {
+            const data = {
                 name,
                 request: rows.map(row => ({
                     pieceId: row.piece.value,
@@ -111,8 +129,23 @@ export default function FormRequests() {
                 warehouseIdOutcomming: userData.data.warehouse.id,
                 warehouseIdIncomming: warehouse.value,
                 numberPr,
-                state: "Em analise"
-            })
+                userId: userData.data.id
+            }
+
+            let response;
+            const url = id === undefined ? `request` : `/request/${id}`
+            if (id === undefined || id === '') {
+                response = await api.post(url, {
+                    ...data,
+                    state: "Em analise"
+
+                })
+            } else {
+                response = await api.patch(url, {
+                    ...data,
+                    id
+                })
+            }
             if (response.status === 201) {
                 addToast({
                     title: "Requisição feita com sucesso, O Armazem receberá para análise!",

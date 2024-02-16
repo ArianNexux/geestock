@@ -14,7 +14,7 @@ import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
 //
 import navConfig from './config';
-
+// import LogoImage from '../../../../public/assets/logo-sonasurf.png'
 // ----------------------------------------------------------------------
 
 const NAV_WIDTH = 280;
@@ -54,7 +54,7 @@ export default function Nav({ openNav, onCloseNav }) {
       }}
     >
       <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
-       LOGO
+        <image src={'../assets/icons/navbar/logo-sonasurf.png'} alt="Logo" />
       </Box>
 
       <Box sx={{ mb: 5, mx: 2.5 }}>

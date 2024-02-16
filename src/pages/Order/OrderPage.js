@@ -86,12 +86,15 @@ export default function OrderPage() {
   const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
+  const [actualId, setActualId] = useState(0);
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isOpen, setIsOpen] = useState(false);
   const [id, setId] = useState(0);
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, id) => {
     setOpen(event.currentTarget);
+    setActualId(id)
+
   };
 
   const handleCloseMenu = () => {
@@ -221,10 +224,11 @@ export default function OrderPage() {
                           </Button>
                         </TableCell>
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
+
                       </TableRow>
                     );
                   })}
@@ -272,36 +276,37 @@ export default function OrderPage() {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Card>
+        <Popover
+          open={Boolean(open)}
+          anchorEl={open}
+          onClose={handleCloseMenu}
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          PaperProps={{
+            sx: {
+              p: 1,
+              width: 140,
+              '& .MuiMenuItem-root': {
+                px: 1,
+                typography: 'body2',
+                borderRadius: 0.75,
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={() => { navigate(`/dashboard/encomenda/editar/${actualId}`) }}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Editar
+          </MenuItem>
+
+          <MenuItem sx={{ color: 'error.main' }}>
+            <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+            Eliminar
+          </MenuItem>
+        </Popover>
       </Container >
 
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Editar
-        </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Eliminar
-        </MenuItem>
-      </Popover>
 
       <ModalConfirmOrder
         isOpen={isOpen}

@@ -30,6 +30,7 @@ import FormOrder from './pages/Order/FormOrder';
 import SupplierPage from './pages/Supplier/SupplierPage';
 import FormSupplier from './pages/Supplier/FormSupplier';
 import { AppContext } from './context/context';
+import LogsPage from './pages/Logs/LogsPage';
 
 // ----------------------------------------------------------------------
 
@@ -43,23 +44,33 @@ export default function Router() {
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'usuario', element: <UserPage /> },
         { path: 'usuario/cadastrar', element: <FormUser /> },
+        { path: 'usuario/editar/:id ', element: <FormUser /> },
         { path: 'armazem', element: <ContainerPage /> },
         { path: 'armazem/cadastrar', element: <FormContainer /> },
+        { path: 'armazem/editar/:id', element: <FormContainer /> },
         { path: 'peca', element: <PiecesPage /> },
         { path: 'peca/cadastrar', element: <FormPieces /> },
+        { path: 'peca/editar/:id', element: <FormPieces /> },
         { path: 'requisicao', element: <RequestsPage /> },
         { path: 'requisicao/cadastrar', element: <FormRequests /> },
+        { path: 'requisicao/editar/:id', element: <FormRequests /> },
         { path: 'requisicao/minhas', element: <RequestsForMe /> },
         { path: 'categoria', element: <CategoryPage /> },
         { path: 'categoria/cadastrar', element: <FormCategory /> },
+        { path: 'categoria/editar/:id', element: <FormCategory /> },
         { path: 'subcategoria', element: <SubcategoryPage /> },
         { path: 'subcategoria/cadastrar', element: <FormSubcategory /> },
+        { path: 'subcategoria/editar/:id', element: <FormSubcategory /> },
         { path: 'transporte', element: <ShippingPage /> },
         { path: 'transporte/cadastrar', element: <FormShipping /> },
+        { path: 'transporte/editar/:id', element: <FormShipping /> },
         { path: 'encomenda', element: <OrderPage /> },
         { path: 'encomenda/cadastrar', element: <FormOrder /> },
+        { path: 'encomenda/editar/:id', element: <FormOrder /> },
+        { path: 'auditoria', element: <LogsPage /> },
         { path: 'fornecedor', element: <SupplierPage /> },
         { path: 'fornecedor/cadastrar', element: <FormSupplier /> },
+        { path: 'fornecedor/editar/:id', element: <FormSupplier /> },
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
       ],

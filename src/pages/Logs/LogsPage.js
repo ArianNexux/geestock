@@ -37,10 +37,9 @@ import api from '../../utils/api';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Nome', alignRight: false },
-  { id: 'company', label: 'E-mail', alignRight: false },
-  { id: 'role', label: 'Função', alignRight: false },
-  { id: 'status', label: 'Estado', alignRight: false },
+  { id: 'name', label: 'Usuário', alignRight: false },
+  { id: 'description', label: 'Descrição', alignRight: false },
+  { id: 'created_at', label: 'Data e Hora', alignRight: false },
   { id: '' },
 ];
 
@@ -75,7 +74,7 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UserPage() {
+export default function LogsPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
@@ -155,7 +154,7 @@ export default function UserPage() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await api.get("/users")
+        const response = await api.get("/logs-activities")
         setData(response.data)
         console.log(response.data)
       } catch (e) {
@@ -167,20 +166,18 @@ export default function UserPage() {
   return (
     <>
       <Helmet>
-        <title> Utilizadores </title>
+        <title> Auditoria </title>
       </Helmet>
 
       <Container>
         <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
-           Início > Utilizadores
+           Início > Auditoria
         </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-            Gestão de utilizadores
+            Gestão de Auditoria
           </Typography>
-          <Button variant="contained" onClick={() => { navigate("/dashboard/usuario/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
-            Cadastrar utilizador
-          </Button>
+
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
@@ -206,7 +203,7 @@ export default function UserPage() {
                 />
                 <TableBody>
                   {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, position, company, email } = row;
+                    const { id, description, user: { name }, created_at: createdAt } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -217,30 +214,17 @@ export default function UserPage() {
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
-                            {
-                              /* <Avatar alt={name} src={avatarUrl} /> */
-                            }
+
                             <Typography variant="subtitle2" noWrap>
                               {name}
                             </Typography>
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{email}</TableCell>
 
+                        <TableCell align="left">{description}</TableCell>
+                        <TableCell align="left">{`${new Date(createdAt).toLocaleDateString('en-GB').toString()} ${new Date(createdAt).toLocaleTimeString()}`}</TableCell>
 
-                        <TableCell align="left">{position}</TableCell>
-
-
-                        <TableCell align="left">
-                          <Label color={(true === 'Inactivo' && 'error') || 'success'}>{sentenceCase('true')}</Label>
-                        </TableCell>
-
-                        <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
-                            <Iconify icon={'eva:more-vertical-fill'} />
-                          </IconButton>
-                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -308,7 +292,7 @@ export default function UserPage() {
           },
         }}
       >
-        <MenuItem onClick={() => { navigate(`/dashboard/usuario/editar/${actualId}`) }}>
+        <MenuItem onClick={() => { navigate(`/ dashboard / usuario / editar / ${actualId}`) }}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Editar
         </MenuItem>

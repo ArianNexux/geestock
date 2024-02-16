@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 // @mui
 import {
     Card,
@@ -16,10 +16,12 @@ import {
 import { useForm } from 'react-hook-form';
 import { Input } from '@chakra-ui/react'
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import CustomFormControlTextArea from '../../components/CustomFormControlTextArea';
 import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 
 import { ModalInsertPiece } from '../../components/modal/modalInsertPiece';
+import { AppContext } from '../../context/context';
 import CustomFormControlInput from '../../components/CustomFormControlInput';
 // components
 import Iconify from '../../components/iconify';
@@ -28,7 +30,6 @@ import api from '../../utils/api'
 import { Toast } from '../../components/Toast';
 import { GET_CATEGORY, GET_SUBCATEGORY, GET_PIECES } from '../../utils/endpoints';
 import TableRequest from '../../components/TableRequest';
-import { AppContext } from '../../context/context';
 
 
 export default function FormOrder() {
@@ -55,6 +56,7 @@ export default function FormOrder() {
     const [isOpen, setIsOpen] = useState(false)
     const [rows, setRows] = useState([])
     const { userData } = useContext(AppContext)
+    const { id } = useParams()
 
     useEffect(() => {
         const getData = async () => {
@@ -65,8 +67,26 @@ export default function FormOrder() {
                 label: e.name
             })))
         }
+        const fullFillFormData = async (data) => {
+            const url = `/order/${id}`
+            const response = await api.get(url)
+            setValue("description", response.data.description)
+            setValue("reference", response.data.reference)
+            setValue("imbl_awb", response.data.imbl_awb)
+            setValue("number_order", response.data.number_order)
+
+            setRows(response.data.OrdersPiece.map(e => ({
+                quantity: Number(e.quantity),
+                piece: { label: e.piece.name, id: e.pieceId },
+                price: Number(e.price),
+            })))
+        }
+
+
+        fullFillFormData()
         getData()
     }, [])
+
     const onSubmit = async (data) => {
         console.log(
             rows.map(r => ({
@@ -76,18 +96,44 @@ export default function FormOrder() {
             }))
         )
         try {
-            const response = await api.post("/order", {
-                ...data,
-                request: rows.map(r => ({
-                    pieceId: r.piece.value,
-                    quantity: r.quantity,
-                    price: r.price
-                }))
 
-            })
+            let response;
+            const url = id === undefined ? `order` : `/order/${id}`
+            if (id === undefined || id === '') {
+                response = await api.post(url, {
+                    ...data,
+                    request: rows.map(r => ({
+                        pieceId: r.piece.value,
+                        quantity: r.quantity,
+                        price: r.price
+                    })),
+                    userId: userData.data.id
+                })
+            } else {
+                response = await api.patch(url, {
+                    ...data,
+                    id,
+                    request: rows.map(r => ({
+                        pieceId: r.piece.value,
+                        quantity: r.quantity,
+                        price: r.price
+                    })),
+                    userId: userData.data.id
+
+                })
+            }
+
+
             if (response.status === 201) {
                 addToast({
                     title: "Encomenda cadastrada com sucesso",
+                    status: "success"
+                })
+                navigate("/dashboard/encomenda")
+            }
+            if (response.status === 200) {
+                addToast({
+                    title: "Encomenda actualizada com sucesso",
                     status: "success"
                 })
                 navigate("/dashboard/encomenda")

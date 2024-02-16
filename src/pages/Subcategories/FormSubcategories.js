@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState, useContext } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 // @mui
 import {
     Card,
@@ -16,6 +16,9 @@ import {
 import { useForm } from 'react-hook-form';
 import { Input } from '@chakra-ui/react'
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AppContext } from '../../context/context';
+
+
 import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 import { Toast } from '../../components/Toast';
 import CustomFormControlInput from '../../components/CustomFormControlInput';
@@ -26,33 +29,60 @@ import { GET_CATEGORY } from '../../utils/endpoints';
 import api from '../../utils/api';
 
 export default function FormSubcategory() {
-    
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    control,
-    watch,
-    setError,
-    getValues,
-    setValue,
-    clearErrors,
-  } = useForm({
-    resolver: zodResolver(SubcategorySchema),
-  });
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        control,
+        watch,
+        setError,
+        getValues,
+        setValue,
+        clearErrors,
+    } = useForm({
+        resolver: zodResolver(SubcategorySchema),
+    });
 
     const category = watch("category")
     const [categoryData, setCategoryData] = useState([])
+    const { userData } = useContext(AppContext)
 
     const { addToast } = Toast()
     const navigate = useNavigate()
+    useEffect(() => {
+        const getData = async (data) => {
+            const url = `/subcategory/${id}`
+            const response = await api.get(url)
+            console.log("FINAL RESPONSE", response.data)
+            setValue("name", response.data.name)
+            setValue("code", response.data.code)
+            setValue("category", response.data.category.id)
+        }
+
+        getData()
+    }, [])
+
+    const { id } = useParams()
     const onSubmit = async (data) => {
-  
+
         try {
-            const response = await api.post("/subcategory", {
-                ...data,
-                categoryId: category.value
-            })
+            let response;
+            const url = id === undefined ? `subcategory` : `/subcategory/${id}`
+            if (id === undefined || id === '') {
+                response = await api.post(url, {
+                    ...data,
+                    categoryId: category.value,
+                    userId: userData.data.id
+                })
+            } else {
+                response = await api.patch(url, {
+                    ...data,
+                    categoryId: category.value,
+                    userId: userData.data.id
+
+                })
+            }
             if (response.status === 201) {
                 addToast({
                     title: "Subcategoria cadastrada com sucesso",
@@ -81,9 +111,9 @@ export default function FormSubcategory() {
             <Helmet>
                 <title> Sub-Categoria Peças </title>
             </Helmet>
-            
+
             <Container>
-                    <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
+                <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
                 Início > Sub-Categoria > Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
@@ -91,56 +121,56 @@ export default function FormSubcategory() {
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>
-                       Gestão de Sub-Categoria
+                        Gestão de Sub-Categoria
                     </Typography>
 
                 </Stack>
                 <Stack>
                     <Typography variant="body2" gutterBottom>Cadastrar Sub-Categoria</Typography>
                 </Stack>
-                <form  onSubmit={handleSubmit(onSubmit)}>
+                <form onSubmit={handleSubmit(onSubmit)}>
 
-                <Container sx={{ backgroundColor: "white", width: "100%", padding: "40px" }} display="flex" flexDirection="column" alignContent="space-between">
-                    <Box mb={5}>
-                        <CustomFormControlInput 
-                            errors={errors}
-                            fieldName="Nome"
-                            fieldNameObject="name"
-                            isDisabled={false}
-                            register={register}
-                            type="text"
-                            placeholder="Insira o nome da subcategoria aqui"
-                        />
-                    </Box>
-                    <Box mb={5}>
-                        <CustomFormControlInput 
-                            errors={errors}
-                            fieldName="Codigo"
-                            fieldNameObject="code"
-                            isDisabled={false}
-                            register={register}
-                            type="text"
-                            placeholder="Insira o codigo aqui..."
-                        />
-                    </Box>
-                    <Box mb={5}>
-                       <CustomFormControlSelect 
-                         errors={errors}
-                         fieldNameObject="category"
-                         isDisabled={false}
-                         parent={{value: 1}}
-                         options={categoryData}
-                         fieldName="Categoria"
-                         control={control}
-                         isMulti={false}
-                       />
-                    </Box>
-                    <Box mt={5}>
-                        <Button sx={{ maxWidth: "40%", height:"40px" }} mb={5} type="submit" variant="contained">
-                            Cadastrar
-                        </Button>
-                    </Box >
-                </Container >
+                    <Container sx={{ backgroundColor: "white", width: "100%", padding: "40px" }} display="flex" flexDirection="column" alignContent="space-between">
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Nome"
+                                fieldNameObject="name"
+                                isDisabled={false}
+                                register={register}
+                                type="text"
+                                placeholder="Insira o nome da subcategoria aqui"
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlInput
+                                errors={errors}
+                                fieldName="Codigo"
+                                fieldNameObject="code"
+                                isDisabled={false}
+                                register={register}
+                                type="text"
+                                placeholder="Insira o codigo aqui..."
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlSelect
+                                errors={errors}
+                                fieldNameObject="category"
+                                isDisabled={false}
+                                parent={{ value: 1 }}
+                                options={categoryData}
+                                fieldName="Categoria"
+                                control={control}
+                                isMulti={false}
+                            />
+                        </Box>
+                        <Box mt={5}>
+                            <Button sx={{ maxWidth: "40%", height: "40px" }} mb={5} type="submit" variant="contained">
+                                Cadastrar
+                            </Button>
+                        </Box >
+                    </Container >
                 </form>
             </Container >
 

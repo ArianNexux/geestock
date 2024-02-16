@@ -1,8 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState, useContext } from 'react';
+
 // @mui
 import {
     Card,
@@ -16,6 +17,8 @@ import {
 import { useForm } from 'react-hook-form';
 import { Input } from '@chakra-ui/react'
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AppContext } from '../../context/context';
+
 import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 import api from '../../utils/api'
 import CustomFormControlInput from '../../components/CustomFormControlInput';
@@ -27,6 +30,8 @@ import { Toast } from '../../components/Toast';
 
 export default function FormContainer() {
     const navigate = useNavigate()
+    const { userData } = useContext(AppContext)
+
     const [schema, setSchema] = useState(WarehouseSchemaFixed)
     const {
         register,
@@ -43,26 +48,53 @@ export default function FormContainer() {
     });
     const typeWarehouse = watch("type")
     useEffect(() => {
+        const getData = async () => {
+            const url = `/warehouse/${id}`
+            const response = await api.get(url)
+            setValue("name", response.data.name)
+            setValue("code", response.data.code)
+            setValue("description", response.data.description)
+            setValue("company", response.data.company)
+            setValue("capacity", response.data.capacity.toString())
+            setValue("flag", response.data.flag)
+            setValue("code", response.data.code)
+            setValue("company", response.data.company)
+            console.log(response)
+            // setValue("type", { label: "Armazém", value: "Armazém" })
+            setSchema(WarehouseSchemaFixed)
 
-        setValue("type", { label: "Armazém", value: "Armazém" })
+        }
+        getData()
 
     }, [])
     useEffect(() => {
-        console.log(typeWarehouse)
         setSchema(typeWarehouse?.value === "Armazém" ? WarehouseSchemaFixed : WarehouseSchemaNonFixed)
-        console.log(typeWarehouse)
     }, [typeWarehouse])
 
     const { addToast } = Toast()
+    const { id } = useParams()
 
     const onSubmit = async (data) => {
-        console.log(errors)
-        console.log(data)
+        console.log("Ola mundo")
         try {
-            const response = await api.post("/warehouse", {
-                ...data,
-                type: typeWarehouse.value
-            })
+
+            let response;
+            const url = id === undefined ? `warehouse` : `/warehouse/${id}`
+            if (id === undefined || id === '') {
+                response = await api.post(url, {
+                    ...data,
+                    type: typeWarehouse.value,
+                    userId: userData.data.id
+                })
+            } else {
+                response = await api.patch(url, {
+                    ...data,
+                    type: typeWarehouse.value,
+                    id,
+                    userId: userData.data.id
+
+                })
+            }
             if (response.status === 201) {
                 addToast({
                     title: "Armazém cadastrado com sucesso",
@@ -96,7 +128,7 @@ export default function FormContainer() {
                 <Stack>
                     <Typography variant="body2" gutterBottom>Cadastrar Armazém</Typography>
                 </Stack>
-                <Container sx={{ backgroundColor: "white", width: "100%", padding: "40px" }} display="flex" flexDirection="column" alignContent="space-between">
+                <Container sx={{ display: 'flex', flexDirection: "column", alignContent: "space-between", backgroundColor: "white", width: "100%", padding: "40px" }} >
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <Box mb={5}>
                             <CustomFormControlInput
@@ -115,7 +147,7 @@ export default function FormContainer() {
                                 fieldNameObject="type"
                                 isDisabled={false}
                                 parent={{ value: 1 }}
-                                options={[{ value: 1, label: "Armazém" }, { value: 2, label: "Embarcação" }]}
+                                options={[{ value: "Armazém", label: "Armazém" }, { value: "Embarcação", label: "Embarcação" }]}
                                 fieldName="Tipo de Armazém"
                                 control={control}
                                 isMulti={false}
@@ -221,7 +253,9 @@ export default function FormContainer() {
                             />
                         </Box>
                         <Box mt={5}>
-                            <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
+                            <Button type="submit" onClick={() => {
+                                console.log(errors)
+                            }} sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
                                 Cadastrar
                             </Button>
                         </Box >

@@ -91,15 +91,19 @@ export default function CategoryPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [data, setData] = useState([])
+  const [actualId, setActualId] = useState(0);
+
   useEffect(() => {
 
-      const getData = async () => {
-          const responseCategories = await api.get(GET_CATEGORY)
-          setData(responseCategories.data)
-      }
-      getData()
+    const getData = async () => {
+      const responseCategories = await api.get(GET_CATEGORY)
+      setData(responseCategories.data)
+    }
+    getData()
   }, [])
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, id) => {
+    setActualId(id)
+
     setOpen(event.currentTarget);
   };
 
@@ -164,27 +168,27 @@ export default function CategoryPage() {
       </Helmet>
 
       <Container>
-          <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
+        <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
            Início > Categorias
-          </Typography>
+        </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-           Gestão de Categorias
+            Gestão de Categorias
           </Typography>
           <Button variant="contained" onClick={() => { navigate("/dashboard/categoria/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
             Cadastrar Categoria
           </Button>
         </Stack>
-   
+
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
           <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
           <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
- 
+
         <Card>
-    
+
           <Scrollbar>
             <TableContainer sx={{ minWidth: 900 }}>
               <Table>
@@ -220,10 +224,11 @@ export default function CategoryPage() {
 
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
+
                       </TableRow>
                     );
                   })}
@@ -271,36 +276,37 @@ export default function CategoryPage() {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Card>
+        <Popover
+          open={Boolean(open)}
+          anchorEl={open}
+          onClose={handleCloseMenu}
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          PaperProps={{
+            sx: {
+              p: 1,
+              width: 140,
+              '& .MuiMenuItem-root': {
+                px: 1,
+                typography: 'body2',
+                borderRadius: 0.75,
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={() => { navigate(`/dashboard/categoria/editar/${actualId}`) }}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Editar
+          </MenuItem>
+
+          <MenuItem sx={{ color: 'error.main' }}>
+            <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+            Eliminar
+          </MenuItem>
+        </Popover>
       </Container >
 
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Editar
-        </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Eliminar
-        </MenuItem>
-      </Popover>
     </>
   );
 }

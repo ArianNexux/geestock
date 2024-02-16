@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 // @mui
 import {
     Card,
@@ -57,6 +57,8 @@ export default function FormPieces() {
     const [subCategoryData, setSubCategoryData] = useState([])
     const [transportData, setTransportData] = useState([])
     const [supplierData, setSupplierData] = useState([])
+    const { id } = useParams()
+
     useEffect(() => {
 
         const getData = async () => {
@@ -82,14 +84,40 @@ export default function FormPieces() {
                 label: e.name
             })))
         }
+        const fullFillFormData = async (data) => {
+            const url = `/piece/${id}`
+            const response = await api.get(url)
+            console.log("FINAL RESPONSE", response.data)
+            setValue("name", response.data.name)
+            setValue("description", response.data.description)
+            setValue("locationInWarehouse", response.data.partNumber)
+            setValue("partNumber", response.data.partNumber)
+            setValue("price", response.data.price.toString())
+            setValue("brand_name", response.data.brand_name)
+            setValue("supplierId", { value: response.data.supplier.id, label: response.data.supplier.name })
+            setValue("categoryId", { value: response.data.category.id, label: response.data.category.name })
+            setValue("subCategoryId", { value: response.data.subcategory.id, label: response.data.subcategory.name })
+            setValue("quantity", response.data.quantity.toString())
+            setValue("target", response.data.target.toString())
+            setValue("min", response.data.min.toString())
+        }
+
+        fullFillFormData()
         getData()
     }, [])
+
+
+
     const onSubmit = async (data) => {
-        console.log(userData)
-        console.log(data)
+        console.log(errors)
         try {
-            const response = await api.post("/piece", {
+            console.log(id)
+            let response;
+            const url = id === undefined ? `piece` : `/piece/${id}`
+
+            const dataRequest = {
                 ...data,
+
                 price: Number(data.price),
                 quantity: Number(data.quantity),
                 target: Number(data.target),
@@ -98,12 +126,27 @@ export default function FormPieces() {
                 supplierId: supplierId.value,
                 categoryId: categoryId.value,
                 subCategoryId: subCategoryId.value,
-                state: state.value
+                state: state.value,
+                userId: userData.data.id,
+            }
 
-            })
+            if (id === undefined || id === '') {
+                response = await api.post(url, dataRequest)
+            } else {
+                response = await api.patch(url, { ...dataRequest, id })
+            }
+
             if (response.status === 201) {
                 addToast({
                     title: "Peça cadastrada com sucesso",
+                    status: "success"
+                })
+                navigate("/dashboard/peca")
+            }
+
+            if (response.status === 200) {
+                addToast({
+                    title: "Peça actualizada com sucesso",
                     status: "success"
                 })
                 navigate("/dashboard/peca")
@@ -187,7 +230,7 @@ export default function FormPieces() {
                                 errors={errors}
                                 fieldName="Preço"
                                 fieldNameObject="price"
-                                isDisabled={false}
+                                isDisabled={id !== undefined}
                                 register={register}
                                 isRequired={false}
                                 type="number"
@@ -266,7 +309,7 @@ export default function FormPieces() {
                                 errors={errors}
                                 fieldName="Quantidade"
                                 fieldNameObject="quantity"
-                                isDisabled={false}
+                                isDisabled={id !== undefined}
                                 register={register}
                                 isRequired={false}
                                 type="text"
@@ -300,7 +343,7 @@ export default function FormPieces() {
 
 
                         <Box mt={5}>
-                            <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
+                            <Button type="submit" onClick={() => { console.log(errors) }} sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
                                 Cadastrar
                             </Button>
                         </Box >

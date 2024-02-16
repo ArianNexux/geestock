@@ -90,8 +90,10 @@ export default function RequestsPage() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [actualId, setActualId] = useState(0);
 
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, id) => {
+    setActualId(id)
     setOpen(event.currentTarget);
   };
 
@@ -234,7 +236,7 @@ export default function RequestsPage() {
                         </TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -305,7 +307,7 @@ export default function RequestsPage() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem onClick={() => { navigate(`/dashboard/requisicao/editar/${actualId}`) }}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Editar
         </MenuItem>

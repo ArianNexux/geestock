@@ -87,18 +87,20 @@ export default function ShippingPage() {
   const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
+  const [actualId, setActualId] = useState(0);
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [data, setData] = useState([])
   useEffect(() => {
 
-      const getData = async () => {
-          const responseCategories = await api.get(GET_TRANSPORT)
-          setData(responseCategories.data)
-      }
-      getData()
+    const getData = async () => {
+      const responseCategories = await api.get(GET_TRANSPORT)
+      setData(responseCategories.data)
+    }
+    getData()
   }, [])
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, id) => {
+    setActualId(id)
     setOpen(event.currentTarget);
   };
 
@@ -163,15 +165,15 @@ export default function ShippingPage() {
       </Helmet>
 
       <Container>
-          <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
+        <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
           Início > Transportes
-          </Typography>
+        </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-          Gestão de Transportes
+            Gestão de Transportes
           </Typography>
           <Button variant="contained" onClick={() => { navigate("/dashboard/transporte/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
-          Cadastrar Transporte
+            Cadastrar Transporte
           </Button>
         </Stack>
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
@@ -180,9 +182,9 @@ export default function ShippingPage() {
             Pesquisar
           </Button>
         </Stack>
- 
+
         <Card>
-    
+
           <Scrollbar>
             <TableContainer sx={{ minWidth: 900 }}>
               <Table>
@@ -197,32 +199,35 @@ export default function ShippingPage() {
                 />
                 <TableBody>
                   {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, code} = row;
+                    const { id, name, code } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
-                      <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                        </TableCell>
+                      <>
+                        <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+                          <TableCell padding="checkbox">
+                            <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
+                          </TableCell>
 
-                        <TableCell component="th" scope="row" padding="none">
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            <Typography variant="subtitle2" noWrap>
-                              {name}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
+                          <TableCell component="th" scope="row" padding="none">
+                            <Stack direction="row" alignItems="center" spacing={2}>
+                              <Typography variant="subtitle2" noWrap>
+                                {name}
+                              </Typography>
+                            </Stack>
+                          </TableCell>
 
-                        <TableCell align="left">{code}</TableCell>
+                          <TableCell align="left">{code}</TableCell>
 
-          
-                        <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
-                            <Iconify icon={'eva:more-vertical-fill'} />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
+
+                          <TableCell align="right">
+                            <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
+                              <Iconify icon={'eva:more-vertical-fill'} />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+
+                      </>
                     );
                   })}
                   {emptyRows > 0 && (
@@ -269,36 +274,37 @@ export default function ShippingPage() {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Card>
+        <Popover
+          open={Boolean(open)}
+          anchorEl={open}
+          onClose={handleCloseMenu}
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          PaperProps={{
+            sx: {
+              p: 1,
+              width: 140,
+              '& .MuiMenuItem-root': {
+                px: 1,
+                typography: 'body2',
+                borderRadius: 0.75,
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={() => { navigate(`/dashboard/transporte/editar/${actualId}`) }}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Editar
+          </MenuItem>
+
+          <MenuItem sx={{ color: 'error.main' }}>
+            <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+            Eliminar
+          </MenuItem>
+        </Popover>
       </Container >
 
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Editar
-        </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Eliminar
-        </MenuItem>
-      </Popover>
     </>
   );
 }

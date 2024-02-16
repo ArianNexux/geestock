@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { set, sub } from 'date-fns';
 import { noCase } from 'change-case';
 import { faker } from '@faker-js/faker';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 // @mui
 import {
   Box,
@@ -21,6 +21,7 @@ import {
   ListItemButton,
 } from '@mui/material';
 // utils
+import api from '../../../utils/api'
 import { fToNow } from '../../../utils/formatTime';
 // components
 import Iconify from '../../../components/iconify';
@@ -90,7 +91,22 @@ export default function NotificationsPopover() {
   const handleClose = () => {
     setOpen(null);
   };
-
+  useEffect(() => {
+    const getData = async () => {
+      const response = await api.get('/alerts')
+      console.log(response)
+      setNotifications(response.data.map((item) => ({
+        createdAt: item.created_at,
+        type: 'mail',
+        description: item.description.toString(),
+        title: 'Alerta',
+        isUnRead: false,
+        avatar: null,
+        id: item.id
+      })))
+    }
+    getData()
+  }, [])
   const handleMarkAllAsRead = () => {
     setNotifications(
       notifications.map((notification) => ({
@@ -124,10 +140,8 @@ export default function NotificationsPopover() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', py: 2, px: 2.5 }}>
           <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="subtitle1">Notifications</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              You have {totalUnRead} unread messages
-            </Typography>
+            <Typography variant="subtitle1">Alertas</Typography>
+
           </Box>
 
           {totalUnRead > 0 && (
@@ -144,11 +158,7 @@ export default function NotificationsPopover() {
         <Scrollbar sx={{ height: { xs: 340, sm: 'auto' } }}>
           <List
             disablePadding
-            subheader={
-              <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                New
-              </ListSubheader>
-            }
+
           >
             {notifications.slice(0, 2).map((notification) => (
               <NotificationItem key={notification.id} notification={notification} />
@@ -157,11 +167,7 @@ export default function NotificationsPopover() {
 
           <List
             disablePadding
-            subheader={
-              <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                Before that
-              </ListSubheader>
-            }
+
           >
             {notifications.slice(2, 5).map((notification) => (
               <NotificationItem key={notification.id} notification={notification} />
@@ -171,11 +177,6 @@ export default function NotificationsPopover() {
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <Box sx={{ p: 1 }}>
-          <Button fullWidth disableRipple>
-            View All
-          </Button>
-        </Box>
       </Popover>
     </>
   );
@@ -225,7 +226,10 @@ function NotificationItem({ notification }) {
             }}
           >
             <Iconify icon="eva:clock-outline" sx={{ mr: 0.5, width: 16, height: 16 }} />
-            {fToNow(notification.createdAt)}
+            {
+
+              `${new Date(notification.createdAt).toLocaleDateString('en-GB').toString()} ${new Date(notification.createdAt).toLocaleTimeString().toString()}`
+            }
           </Typography>
         }
       />
@@ -238,9 +242,9 @@ function NotificationItem({ notification }) {
 function renderContent(notification) {
   const title = (
     <Typography variant="subtitle2">
-      {notification.title}
+      {notification.title}<br />
       <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
-        &nbsp; {noCase(notification.description)}
+        {notification.description}
       </Typography>
     </Typography>
   );

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,6 +8,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Modal from '@mui/material/Modal';
 import api from '../../utils/api';
+import { AppContext } from '../../context/context';
+
 import { Toast } from '../Toast';
 import TableRequest from '../TableRequest';
 import { OrderSchema } from './schema.ts';
@@ -56,10 +58,10 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
     const navigate = useNavigate()
     const quantity = watch("quantity")
     const price = watch("price")
-    const [rows, setRows] = React.useState([])
-    const [numberSeries, setNumberSeries] = React.useState("0")
-
-    React.useEffect(() => {
+    const [rows, setRows] = useState([])
+    const [numberSeries, setNumberSeries] = useState("0")
+    const { userData } = useContext(AppContext)
+    useEffect(() => {
         const getData = async () => {
             const response = await api.get(`order/${id}`)
             if (response.status !== 200) {
@@ -93,7 +95,8 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
             console.log(pieceData)
 
             const response = await api.post(`/order/confirm-order/${id}`, {
-                pieceData
+                pieceData,
+                userId: userData.data.id,
             })
 
             if (response.status === 200 || response.status === 201) {

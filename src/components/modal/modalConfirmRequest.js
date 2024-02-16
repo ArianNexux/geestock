@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState, useContext, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Modal from '@mui/material/Modal';
+import { AppContext } from '../../context/context';
 import api from '../../utils/api';
 import { Toast } from '../Toast';
 import TableRequestForMe from '../TableRequestForMe';
@@ -51,16 +52,17 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
     } = useForm({
         resolver: zodResolver(OrderSchema),
     });
-    const [partNumber, setPartNumber] = React.useState([{}])
+    const [partNumber, setPartNumber] = useState([{}])
 
     const { addToast } = Toast()
 
     const navigate = useNavigate()
     const quantity = watch("quantity")
     const price = watch("price")
-    const [rows, setRows] = React.useState([{}])
-    const [numberSeries, setNumberSeries] = React.useState("0")
+    const [rows, setRows] = useState([{}])
+    const [numberSeries, setNumberSeries] = useState("0")
 
+    const { userData } = useContext(AppContext)
 
     const handleAcceptRequest = async () => {
         console.log(rows)
@@ -72,7 +74,8 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
 
         const url = `/request/accept-request/${id}`;
         const response = await api.post(url, {
-            pieceData: requestData
+            pieceData: requestData,
+            userId: userData.data.id
         })
         if (response.status === 201) {
             addToast({
@@ -87,7 +90,7 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
     }
 
 
-    React.useEffect(() => {
+    useEffect(() => {
         const getData = async () => {
             const response = await api.get(`request/${id}`)
             if (response.status !== 200) {

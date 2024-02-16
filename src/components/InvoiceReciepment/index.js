@@ -3,7 +3,6 @@ import React from 'react';
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from "pdfmake/build/vfs_fonts";
-
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 // Create styles
@@ -34,17 +33,125 @@ const MyDocument = (data) => {
                     }
                 },
             },
+
             {
                 columns: [
                     {
                         text: [
-                            { text: "\tNota de Entrega - GEESTOCK", style: 'header' },
+                            {
+                                text: "\tNota de Entrega - GEESTOCK", style: 'header', margin: [50, 5, 50, 5],
+                            },
                             { text: '\n' },
                             { text: '\n' },
+                            { text: 'Recibo Por:\n', margin: [0, 5, 0, 5] },
                             { text: '\n' },
+                            { text: 'Entregue Por:\n', margin: [0, 5, 0, 5] },
                         ],
                     },
                 ],
+                margin: [0, 10, 0, 10],
+
+            },
+            {
+                layout: {
+                    hLineWidth: function (i, node) {
+                        return (i === 0 || i === node.table.body.length) ? 2 : 1;
+                    },
+                    vLineWidth: function (i, node) {
+                        return (i === 0 || i === node.table.widths.length) ? 2 : 1;
+                    },
+                    hLineColor: function (i, node) {
+                        return (i === 0 || i === node.table.body.length) ? 'black' : 'gray';
+                    },
+                    vLineColor: function (i, node) {
+                        return (i === 0 || i === node.table.widths.length) ? 'black' : 'gray';
+                    },
+                    // hLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+                    // vLineStyle: function (i, node) { return {dash: { length: 10, space: 4 }}; },
+                    // paddingLeft: function(i, node) { return 4; },
+                    // paddingRight: function(i, node) { return 4; },
+                    // paddingTop: function(i, node) { return 2; },
+                    // paddingBottom: function(i, node) { return 2; },
+                    // fillColor: function (rowIndex, node, columnIndex) { return null; }
+                },
+                margin: [0, 20, 0, 20],
+                table: {
+                    style: 'bottomToThisTable',
+                    // headers are automatically repeated if the table spans over multiple pages
+                    // you can declare how many rows should be treated as headers
+                    function(currentPage, pageCount, pageSize) {
+                        // you can apply any logic and return any valid pdfmake element
+
+                        return [
+                            { text: 'simple text', alignment: (currentPage % 2) ? 'left' : 'right' },
+                            { canvas: [{ type: 'rect', x: 170, y: 32, w: pageSize.width - 170, h: 40 }] }
+                        ]
+                    },
+                    headerRows: 1,
+                    widths: ['*', 'auto', 100, '*'],
+                    body: [
+                        [
+                            {
+                                text: 'Armazem Origem',
+                                bold: true,
+                                fillColor: '#C8C8C8',
+                                style: 'anotherStyle',
+                            },
+                            {
+                                text: 'Armazem Destino',
+                                bold: true,
+                                fillColor: '#C8C8C8',
+                                style: 'anotherStyle',
+                            },
+                            {
+                                text: 'Número PR',
+                                bold: true,
+                                fillColor: '#C8C8C8',
+                                style: 'anotherStyle',
+                            },
+                            {
+                                text: 'Data e Hora',
+                                bold: true,
+                                fillColor: '#C8C8C8',
+                                style: 'anotherStyle',
+                            }
+                        ],
+                        [
+                            { text: data.warehouseOutcomming, style: 'cellStyle' },
+                            { text: data.warehouseIncomming, style: 'cellStyle' },
+                            { text: data.numberPr, style: 'cellStyle' },
+                            { text: data.createdAt, style: 'cellStyle' },
+                        ]
+                        ,
+
+                    ],
+                    styles: {
+                        header: {
+                            fontSize: 16,
+                            lineHeight: '1',
+                            alignment: 'center',
+                            border: '1px solid red',
+                        },
+                        anotherStyle: {
+                            fontSize: 11,
+                            alignment: 'left',
+                            color: 'white',
+                        },
+                        cellStyle: {
+                            fontSize: 9,
+                            alignment: 'left',
+                            marginBottom: 100,
+                        },
+                        anotherHeader: {
+                            color: '#000',
+                            fontSize: 11,
+                            alignment: 'left',
+                        },
+                        bottomToThisTable: {
+                            marginBottom: 200
+                        }
+                    },
+                }
             },
             {
                 layout: {
@@ -108,7 +215,7 @@ const MyDocument = (data) => {
                                 style: 'anotherStyle',
                             }
                         ],
-                        ...data.map(e => {
+                        ...data.returnmentData.map(e => {
                             return ([
                                 { text: e.pieceName, style: 'cellStyle' },
                                 { text: e.description, style: 'cellStyle' },
@@ -141,7 +248,7 @@ const MyDocument = (data) => {
                         },
                     },
                 }
-            }
+            },
         ]
     };
 

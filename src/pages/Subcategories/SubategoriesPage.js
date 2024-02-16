@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // @mui
 import {
@@ -81,29 +81,29 @@ export default function SubcategoryPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
-
   const [order, setOrder] = useState('asc');
-
   const [selected, setSelected] = useState([]);
-
   const [orderBy, setOrderBy] = useState('name');
-
   const [filterName, setFilterName] = useState('');
-
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [data, setData] = useState([])
+  const [actualId, setActualId] = useState("");
+
   useEffect(() => {
 
-      const getData = async () => {
-          const responseCategories = await api.get(GET_SUBCATEGORY)
-          setData(responseCategories.data)
-      }
-      getData()
+    const getData = async () => {
+      const responseCategories = await api.get(GET_SUBCATEGORY)
+      setData(responseCategories.data)
+
+    }
+    getData()
   }, [])
 
 
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, id) => {
+    console.log(id)
     setOpen(event.currentTarget);
+    setActualId(id)
   };
 
   const handleCloseMenu = () => {
@@ -167,27 +167,27 @@ export default function SubcategoryPage() {
       </Helmet>
 
       <Container>
-          <Typography variant="p" sx={{borderBottom: "1px solid black", marginBottom:"10px"}} gutterBottom>
+        <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
            Início > Sub-Categorias
-          </Typography>
+        </Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mt={3} mb={5}>
           <Typography variant="h4" gutterBottom>
-           Gestão de Sub-Categorias
+            Gestão de Sub-Categorias
           </Typography>
           <Button variant="contained" onClick={() => { navigate("/dashboard/subcategoria/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
             Cadastrar Sub-Categoria
           </Button>
         </Stack>
-   
+
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
           <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
           <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
- 
+
         <Card>
-    
+
           <Scrollbar>
             <TableContainer sx={{ minWidth: 900 }}>
               <Table>
@@ -202,8 +202,8 @@ export default function SubcategoryPage() {
                 />
                 <TableBody>
                   {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, code, category: { name : categoryName}} = row;
-                    console.log("NEW",categoryName)
+                    const { id, name, code, category: { name: categoryName } } = row;
+                    console.log("NEW", categoryName)
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -214,13 +214,13 @@ export default function SubcategoryPage() {
 
                         <TableCell align="left">{code}</TableCell>
                         <TableCell align="left">
-                              {name}
+                          {name}
                         </TableCell>
 
                         <TableCell align="left">{categoryName}</TableCell>
-        
+
                         <TableCell align="left">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -235,27 +235,30 @@ export default function SubcategoryPage() {
                 </TableBody>
 
                 {isNotFound && (
-                  <TableBody>
-                    <TableRow>
-                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                        <Paper
-                          sx={{
-                            textAlign: 'center',
-                          }}
-                        >
-                          <Typography variant="h6" paragraph>
-                            Not found
-                          </Typography>
+                  <>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                          <Paper
+                            sx={{
+                              textAlign: 'center',
+                            }}
+                          >
+                            <Typography variant="h6" paragraph>
+                              Not found
+                            </Typography>
 
-                          <Typography variant="body2">
-                            No results found for &nbsp;
-                            <strong>&quot;{filterName}&quot;</strong>.
-                            <br /> Try checking for typos or using complete words.
-                          </Typography>
-                        </Paper>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
+                            <Typography variant="body2">
+                              No results found for &nbsp;
+                              <strong>&quot;{filterName}&quot;</strong>.
+                              <br /> Try checking for typos or using complete words.
+                            </Typography>
+                          </Paper>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+
+                  </>
                 )}
               </Table>
             </TableContainer>
@@ -271,36 +274,37 @@ export default function SubcategoryPage() {
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Card>
+        <Popover
+          open={Boolean(open)}
+          anchorEl={open}
+          onClose={handleCloseMenu}
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          PaperProps={{
+            sx: {
+              p: 1,
+              width: 140,
+              '& .MuiMenuItem-root': {
+                px: 1,
+                typography: 'body2',
+                borderRadius: 0.75,
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={() => { navigate(`/dashboard/subcategoria/editar/${actualId}`) }}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Editar
+          </MenuItem>
+
+          <MenuItem sx={{ color: 'error.main' }}>
+            <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+            Eliminar
+          </MenuItem>
+        </Popover>
       </Container >
 
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Editar
-        </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Eliminar
-        </MenuItem>
-      </Popover>
     </>
   );
 }

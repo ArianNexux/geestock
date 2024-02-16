@@ -50,6 +50,13 @@ const navConfig = [
 
   },
   {
+    title: 'Auditoria',
+    path: '/dashboard/auditoria',
+    icon: icon('ic_user'),
+    permission: ["1"]
+
+  },
+  {
     title: 'Categorias',
     path: '/dashboard/categoria',
     icon: iconPng('categorizacao'),
