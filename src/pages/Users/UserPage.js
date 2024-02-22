@@ -75,6 +75,7 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
+
 export default function UserPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
@@ -91,7 +92,11 @@ export default function UserPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [actualId, setActualId] = useState(0);
-
+  const usersTypes = [
+    { label: "Administrador", value: "1" },
+    { label: "Gestor de Armazem", value: "2" },
+    { label: "Funcionário", value: "3" },
+  ]
   const handleOpenMenu = (event, id) => {
     console.log(id)
     setActualId(id);
@@ -164,6 +169,34 @@ export default function UserPage() {
     }
     getData()
   }, [])
+
+  const [search, setSearch] = useState("")
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        if (search.length <= 1) {
+          const url = `/users`;
+          const response = await api.get(url)
+          setData(response.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [search])
+  const handleSearch = async () => {
+    try {
+
+      const url = `/users?searchParam=${search}`;
+      const response = await api.get(url)
+      setData(response.data)
+      console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
   return (
     <>
       <Helmet>
@@ -184,8 +217,8 @@ export default function UserPage() {
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
-          <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
-          <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
+          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo nome ou email" type="email" sx={{ minWidth: "50%" }} />
+          <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
@@ -211,9 +244,7 @@ export default function UserPage() {
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                        </TableCell>
+
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
@@ -229,11 +260,11 @@ export default function UserPage() {
                         <TableCell align="left">{email}</TableCell>
 
 
-                        <TableCell align="left">{position}</TableCell>
+                        <TableCell align="left">{usersTypes[position - 1 ?? 0]?.label}</TableCell>
 
 
                         <TableCell align="left">
-                          <Label color={(true === 'Inactivo' && 'error') || 'success'}>{sentenceCase('true')}</Label>
+                          <Label color={(true === 'Inactivo' && 'error') || 'success'}>{sentenceCase('Activo')}</Label>
                         </TableCell>
 
                         <TableCell align="right">
@@ -315,7 +346,7 @@ export default function UserPage() {
 
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Eliminar
+          Desativar
         </MenuItem>
       </Popover>
     </>

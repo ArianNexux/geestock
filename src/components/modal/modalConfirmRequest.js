@@ -99,7 +99,9 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
             setRows(response.data?.RequestsPieces?.map(row => ({
                 piece: {
                     value: row.pieceId,
-                    label: row.piece.name
+                    label: row.piece.name,
+                    location: row.piece.locationInWarehouse,
+                    quantity: row.piece.quantity,
                 },
                 quantity: row.quantity,
                 price: row.piece.price,

@@ -23,7 +23,7 @@ export default function ProductsPage() {
   return (
     <>
       <Helmet>
-        <title> Dashboard: Products | GEESTOCK</title>
+        <title> Dashboard: Products | GESSTOCK</title>
       </Helmet>
 
       <Container>

@@ -11,7 +11,7 @@ const navConfig = [
     title: 'dashboard',
     path: '/dashboard/app',
     icon: icon('ic_analytics'),
-    permission: ["1", "2"]
+    permission: ["1", "2", "3"]
 
   },
   {
@@ -25,19 +25,19 @@ const navConfig = [
     title: 'Peças',
     path: '/dashboard/peca',
     icon: iconPng('pecas-de-reposicao'),
-    permission: ["1", "2"]
+    permission: ["1", "2", "3"]
 
   },
   {
     title: 'Requisições',
     path: '/dashboard/requisicao',
     icon: iconPng('pedido'),
-    permission: ["1", "2"]
+    permission: ["1", "2", "3"]
 
   },
   {
     title: 'Notas de Entrega',
-    path: '/dashboard/nota-entrega',
+    path: '/dashboard/notas-entrega',
     icon: iconPng('nota-de-entrega'),
     permission: ["1"]
 
@@ -45,14 +45,14 @@ const navConfig = [
   {
     title: 'Utilizadores',
     path: '/dashboard/usuario',
-    icon: icon('ic_user'),
+    icon: iconPng('user'),
     permission: ["1"]
 
   },
   {
     title: 'Auditoria',
     path: '/dashboard/auditoria',
-    icon: icon('ic_user'),
+    icon: iconPng('log'),
     permission: ["1"]
 
   },
@@ -67,7 +67,7 @@ const navConfig = [
     title: 'Encomendas',
     path: '/dashboard/encomenda',
     icon: iconPng('caixa-de-entrega'),
-    permission: ["1", "2"]
+    permission: ["1", "2", "3"]
   },
   {
     title: 'Fornecedores',
@@ -87,7 +87,7 @@ const navConfig = [
     title: 'Transportes',
     path: '/dashboard/transporte',
     icon: iconPng('cargueiro'),
-    permission: ["1"]
+    permission: []
 
   },
 

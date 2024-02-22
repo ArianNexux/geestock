@@ -87,7 +87,7 @@ export default function ModalNumberSeries({ isOpen, setIsOpen, quantity, numberS
                     }
 
                     <Box>
-                        <Button variant="contained" sx={buttonStyle} onClick={(e) => { console.log(numberSeries) }}>
+                        <Button variant="contained" sx={buttonStyle} onClick={(e) => { handleClose() }}>
                             Confirmar
                         </Button>
                     </Box>

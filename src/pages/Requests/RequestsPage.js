@@ -121,7 +121,7 @@ export default function RequestsPage() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const url = `/request/warehouseoutcomming/${userData.data.warehouse.id}`;
+        const url = userData.data.position === "1" ? `/request` : `/request/warehouseoutcomming/${userData.data.warehouse.id}`;
         const response = await api.get(url)
         setData(response.data)
         console.log("LOGAR", response.data)
@@ -165,7 +165,33 @@ export default function RequestsPage() {
   const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
+  const [search, setSearch] = useState("")
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        if (search.length <= 1) {
+          const url = userData.data.position === "1" ? `/request/?searchParam=${search}` : `/request/warehouseoutcomming/${userData.data.warehouse.id}`;;
+          const response = await api.get(url)
+          setData(response.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [search])
+  const handleSearch = async () => {
+    try {
 
+      const url = userData.data.position === "1" ? `/request/?searchParam=${search}` : `/request/warehouseoutcomming?searchParam=${search}`;
+      const response = await api.get(url)
+      setData(response.data)
+      console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
   return (
     <>
       <Helmet>
@@ -180,19 +206,19 @@ export default function RequestsPage() {
           <Typography variant="h4" gutterBottom>
             Gestão de Requisições
           </Typography>
-          <Box sx={{ width: "45%", display: "flex", justifyContent: "space-between" }}>
-            <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/minhas") }} startIcon={<Iconify icon="eva:eye-fill" />}>
+          <Box sx={{ width: "20%", display: "flex", justifyContent: "space-between" }}>
+            {userData.data.position !== "1" && <><Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/minhas") }} startIcon={<Iconify icon="eva:eye-fill" />}>
               Requisições Para mim
-            </Button>
-            <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
-              Enviar Requisição
-            </Button>
+            </Button></>}
+            {userData.data.position === "1" && <> <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+              Criar Requisição
+            </Button></>}
           </Box>
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
-          <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
-          <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
+          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo nome ou Número PR" type="email" sx={{ minWidth: "50%" }} />
+          <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
@@ -220,19 +246,18 @@ export default function RequestsPage() {
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
-                            <Typography variant="subtitle2" noWrap>
-                              { }
+                            <Typography variant="subtitle2" style={{ textIndent: '20px' }} noWrap>
+                              {name}
                             </Typography>
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{name}</TableCell>
 
                         <TableCell align="left">{warehouseName}</TableCell>
 
 
                         <TableCell align="left">
-                          <Label color={(state === 'Em Analise' && 'error') || 'success'}>{sentenceCase(state)}</Label>
+                          <Label color={(state === 'Em Curso' && 'error') || 'success'}>{sentenceCase(state)}</Label>
                         </TableCell>
 
                         <TableCell align="right">
@@ -309,7 +334,7 @@ export default function RequestsPage() {
       >
         <MenuItem onClick={() => { navigate(`/dashboard/requisicao/editar/${actualId}`) }}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Editar
+          Ver mais
         </MenuItem>
 
         <MenuItem sx={{ color: 'error.main' }}>

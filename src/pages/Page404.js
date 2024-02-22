@@ -22,7 +22,7 @@ export default function Page404() {
   return (
     <>
       <Helmet>
-        <title> 404 Página não encontrada | GEESTOCK</title>
+        <title> 404 Página não encontrada | GESSTOCK</title>
       </Helmet>
 
       <Container>

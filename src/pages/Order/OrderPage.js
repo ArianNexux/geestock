@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import {
@@ -18,8 +18,11 @@ import {
   TableBody,
   TableCell,
   Container,
+  Select,
   Typography,
   IconButton,
+  FormControl,
+  InputLabel,
   TableContainer,
   TablePagination,
   TextField
@@ -34,10 +37,11 @@ import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 import USERLIST from '../../_mock/user';
 import api from '../../utils/api';
+import { AppContext } from '../../context/context';
 // ----------------------------------------------------------------------
 const TABLE_HEAD = [
   { id: 'description', label: 'Descrição', alignRight: false },
-  { id: 'imbl_awb', label: 'IMBL/AWB', alignRight: false },
+  { id: 'imbl_awb', label: 'BL/AWB', alignRight: false },
   { id: 'reference', label: 'Referência', alignRight: false },
   { id: 'actions', label: 'Acção', alignRight: false },
   { id: '' },
@@ -78,7 +82,7 @@ export default function OrderPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
-
+  const { userData } = useContext(AppContext)
   const [order, setOrder] = useState('asc');
 
   const [selected, setSelected] = useState([]);
@@ -87,7 +91,7 @@ export default function OrderPage() {
 
   const [filterName, setFilterName] = useState('');
   const [actualId, setActualId] = useState(0);
-
+  const [stateOrder, setStateOrder] = useState('')
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isOpen, setIsOpen] = useState(false);
   const [id, setId] = useState(0);
@@ -100,7 +104,44 @@ export default function OrderPage() {
   const handleCloseMenu = () => {
     setOpen(null);
   };
+  const [search, setSearch] = useState("")
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        if (search.length <= 1) {
+          const url = `/order`;
+          const response = await api.get(url)
+          setData(response.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [search])
+  const handleSearch = async () => {
+    try {
 
+      const url = `/order?searchParam=${search}`;
+      const response = await api.get(url)
+      setData(response.data)
+      console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  const handleChange = async (e) => {
+    setStateOrder(e.target.value)
+    try {
+      const url = e.target.value === "Todos" ? "/order" : `/order?searchParam=${e.target.value}`
+      const response = await api.get(url)
+      setData(response.data)
+      console.log(response.data)
+    } catch (e) {
+      console.log(e)
+    }
+  }
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -176,14 +217,29 @@ export default function OrderPage() {
           <Typography variant="h4" gutterBottom>
             Gestão de Encomendas
           </Typography>
-          <Button variant="contained" onClick={() => { navigate("/dashboard/encomenda/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+          {userData.data.position === "1" && <Button variant="contained" onClick={() => { navigate("/dashboard/encomenda/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
             Cadastrar Encomenda
-          </Button>
+          </Button>}
         </Stack>
 
+
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
-          <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
-          <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
+          <FormControl variant="standard" sx={{ m: 1, minWidth: '40%', marginRight: '50px' }}>
+            <InputLabel id="demo-simple-select-standard-label">Estado da Encomenda</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={stateOrder}
+              label="Estado da Encomenda"
+              onChange={handleChange}
+            >
+              <MenuItem value={'Todos'}>Todos</MenuItem>
+              <MenuItem value={'Em Curso'}>Em Curso</MenuItem>
+              <MenuItem value={'Finalizada'}>Finalizada</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo BL/AWB ou Descrição da Encomenda" type="email" sx={{ minWidth: "50%" }} />
+          <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
@@ -209,9 +265,7 @@ export default function OrderPage() {
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, description)} />
-                        </TableCell>
+
 
                         <TableCell align="left">{description}</TableCell>
 
@@ -296,7 +350,7 @@ export default function OrderPage() {
         >
           <MenuItem onClick={() => { navigate(`/dashboard/encomenda/editar/${actualId}`) }}>
             <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-            Editar
+            Ver mais
           </MenuItem>
 
           <MenuItem sx={{ color: 'error.main' }}>

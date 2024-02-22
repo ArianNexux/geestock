@@ -23,6 +23,9 @@ import {
   Grid,
   Container,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
   IconButton,
   TableContainer,
   TablePagination,
@@ -52,10 +55,9 @@ import USERLIST from '../_mock/user';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome', alignRight: false },
-  { id: 'description', label: 'Armazém', alignRight: false },
+  { id: 'partNumber', label: 'PN', alignRight: false },
+  { id: 'description', label: 'Descrição', alignRight: false },
   { id: 'quantity', label: 'Quantidade', alignRight: false },
-  { id: 'price', label: 'Preço', alignRight: false },
-  { id: '' },
 ];
 // ----------------------------------------------------------------------
 
@@ -96,11 +98,13 @@ export default function DashboardAppPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
+  const [filter, setFilter] = useState('Todos')
 
   const [order, setOrder] = useState('asc');
 
   const [selected, setSelected] = useState([]);
 
+  const [warehouseData, setDataWarehouse] = useState([]);
   const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
@@ -166,6 +170,7 @@ export default function DashboardAppPage() {
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
   const [data, setData] = useState([])
+  const [search, setSearch] = useState("")
   const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
   const isNotFound = !filteredUsers.length && !!filterName;
 
@@ -174,9 +179,11 @@ export default function DashboardAppPage() {
       const response = await api.get('/dashboard')
       setDashboard(response.data)
       try {
-        const url = userData.data?.position === "2" ? `/piece/warehouse/${userData.data.warehouse.id}` : `/piece`;
+        const url = filter !== "Todos" ? `/piece/warehouse/${filter}` : `/piece`;
         const response = await api.get(url)
+        const responseWarehouse = await api.get("/warehouse")
         setData(response.data)
+        setDataWarehouse(responseWarehouse.data)
         console.log(response.data)
       } catch (e) {
         console.log(e)
@@ -184,11 +191,48 @@ export default function DashboardAppPage() {
     }
     getData()
   }, [])
+
+  const handleSearch = async () => {
+    try {
+
+      const url = filter !== "Todos" ? `/piece/warehouse/${filter}?searchParam=${search}` : `/piece?searchParam=${search}`;
+      const response = await api.get(url)
+      setData(response.data)
+      console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  const handleChange = async (e) => {
+    setFilter(e.target.value)
+    try {
+      const url = e.target.value !== "Todos" ? `/piece/warehouse/${e.target.value}` : `/piece?searchParam=${search}`
+      const response = await api.get(url)
+      setData(response.data)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        if (search.length <= 1) {
+          const url = filter !== "Todos" ? `/piece/warehouse/${filter}` : `/piece`;
+          const response = await api.get(url)
+          setData(response.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [search])
   console.log("Vendo o user data aqui:", userData)
   return (
     <>
       <Helmet>
-        <title> Dashboard | GEESTOCK </title>
+        <title> Dashboard | GESSTOCK </title>
       </Helmet>
 
       <Container maxWidth="xl">
@@ -214,7 +258,30 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item xs={12} md={6} lg={12}>
+            <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "10px" }} >
+              <FormControl variant="standard" sx={{ m: 1, minWidth: '40%', marginRight: '50px' }}>
+                <InputLabel id="demo-simple-select-standard-label">Armazém</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={filter}
+                  label="Armazém"
+                  onChange={(e) => handleChange(e)}
+                >
+                  <MenuItem value={'Todos'}>Todos</MenuItem>
+                  {
+                    warehouseData.length > 0 && warehouseData.map(e => (
+                      <MenuItem value={e.id}>{e.name}</MenuItem>
 
+                    ))
+                  }
+                </Select>
+              </FormControl>
+              <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo Part Number ou Nome da Peça" type="email" sx={{ minWidth: "40%" }} />
+              <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
+                Pesquisar
+              </Button>
+            </Stack>
             <Card>
 
               <Scrollbar>
@@ -231,30 +298,30 @@ export default function DashboardAppPage() {
                     />
                     <TableBody>
                       {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                        const { id, name, description, quantity, price } = row;
+                        const { id, name, description, quantity, partNumber } = row;
                         const selectedUser = selected.indexOf(description) !== -1;
 
                         return (
-                          <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                            <TableCell padding="checkbox">
-                              <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, description)} />
-                            </TableCell>
-                            <TableCell component="th" scope="row" padding="none">
-                              <Stack direction="row" alignItems="center" spacing={2}>
-                                <Typography variant="subtitle2" noWrap>
+
+                          <>
+
+                            <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+
+                              <TableCell component="th" scope="row" padding="none">
+                                <Typography variant="subtitle2" style={{ textIndent: '20px' }}>
                                   {name}
                                 </Typography>
-                              </Stack>
-                            </TableCell>
+                              </TableCell>
+                              <TableCell align="left">{partNumber}</TableCell>
 
-                            <TableCell align="left">{description}</TableCell>
+                              <TableCell align="left">{description}</TableCell>
 
-                            <TableCell align="left">{quantity}</TableCell>
-
-                            <TableCell align="left">{price}</TableCell>
+                              <TableCell align="left">{quantity}</TableCell>
 
 
-                          </TableRow>
+
+                            </TableRow>
+                          </>
                         );
                       })}
                       {emptyRows > 0 && (

@@ -20,7 +20,7 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
     return (
         <TableContainer component={Paper}>
             <Table sx={{ width: '300' }} aria-label="simple table">
-                <TableHead>
+                <TableHead sx={{ width: '300' }} >
                     <TableRow>
 
                         <TableCell>Nome da Peça</TableCell>

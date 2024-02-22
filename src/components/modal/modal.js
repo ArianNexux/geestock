@@ -23,6 +23,7 @@ const style = {
     transform: 'translate(-50%, -50%)',
     width: '50%',
     height: '50%',
+    overflowY: 'scroll',
     bgcolor: 'background.paper',
     boxShadow: 24,
     borderRadius: '5px',
@@ -117,11 +118,12 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
     const handleOpen = () => setIsOpen(true);
     const handleClose = () => setIsOpen(false);
     return (
-        <div>
+        <div style={{ overflowY: 'scroll' }}>
             <Modal
                 open={isOpen}
                 onClose={handleClose}
                 aria-labelledby="modal-modal-title"
+
                 aria-describedby="modal-modal-description"
             >
                 <Box sx={style}>

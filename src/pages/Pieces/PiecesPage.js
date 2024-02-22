@@ -38,7 +38,7 @@ import { AppContext } from '../../context/context';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome', alignRight: false },
-  { id: 'description', label: 'Armazém', alignRight: false },
+  { id: 'partNumber', label: 'PN', alignRight: false },
   { id: 'quantity', label: 'Quantidade', alignRight: false },
   { id: 'price', label: 'Preço', alignRight: false },
   { id: '' },
@@ -164,6 +164,33 @@ export default function PiecesPage() {
     }
     getData()
   }, [])
+  const [search, setSearch] = useState("")
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        if (search.length <= 1) {
+          const url = `/piece`;
+          const response = await api.get(url)
+          setData(response.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [search])
+  const handleSearch = async () => {
+    try {
+
+      const url = `/piece?searchParam=${search}`;
+      const response = await api.get(url)
+      setData(response.data)
+      console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
   return (
     <>
       <Helmet>
@@ -184,8 +211,8 @@ export default function PiecesPage() {
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
-          <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
-          <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
+          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo Part Number ou Nome da Peça" type="email" sx={{ minWidth: "50%" }} />
+          <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
@@ -206,24 +233,25 @@ export default function PiecesPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, description, quantity, price } = row;
+                    const { id, name, description, quantity, price, partNumber } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                        </TableCell>
+                        { /*           <TableCell padding="checkbox">
+                          <Checkbox checked={selectedUsEr} onChange={(event) => handleClick(event, name)} />
+                        </TableCell> */
+                        }
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
-                            <Typography variant="subtitle2" noWrap>
+                            <Typography variant="subtitle2" noWrap style={{ textIndent: '20px' }}>
                               {name}
                             </Typography>
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{description}</TableCell>
+                        <TableCell align="left">{partNumber}</TableCell>
 
                         <TableCell align="left">{quantity}</TableCell>
 

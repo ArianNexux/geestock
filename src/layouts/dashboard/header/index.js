@@ -74,7 +74,7 @@ export default function Header({ onOpenNav }) {
           {
             // <LanguagePopover />
           }
-          {userData.data?.position === "Administrador" && <NotificationsPopover />}
+          {userData.data?.position === "1" && <NotificationsPopover />}
           <AccountPopover />
         </Stack>
       </StyledToolbar>

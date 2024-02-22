@@ -55,12 +55,12 @@ export default function FormContainer() {
             setValue("code", response.data.code)
             setValue("description", response.data.description)
             setValue("company", response.data.company)
-            setValue("capacity", response.data.capacity.toString())
+            setValue("capacity", response.data.capacity)
             setValue("flag", response.data.flag)
             setValue("code", response.data.code)
             setValue("company", response.data.company)
             console.log(response)
-            // setValue("type", { label: "Armazém", value: "Armazém" })
+            setValue("type", { label: response.data.type, value: response.data.type })
             setSchema(WarehouseSchemaFixed)
 
         }
@@ -145,7 +145,7 @@ export default function FormContainer() {
                             <CustomFormControlSelect
                                 errors={errors}
                                 fieldNameObject="type"
-                                isDisabled={false}
+                                isDisabled={id !== undefined}
                                 parent={{ value: 1 }}
                                 options={[{ value: "Armazém", label: "Armazém" }, { value: "Embarcação", label: "Embarcação" }]}
                                 fieldName="Tipo de Armazém"
@@ -164,7 +164,7 @@ export default function FormContainer() {
                             />
                         </Box>
                         {
-                            typeWarehouse?.value === 1 ? (
+                            typeWarehouse?.value === "Armazém" ? (
                                 <>
                                     <Box mb={5}>
                                         <CustomFormControlInput

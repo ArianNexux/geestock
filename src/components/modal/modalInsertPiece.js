@@ -95,8 +95,6 @@ export function ModalInsertPiece({ isOpen, setIsOpen, id, dataPieces, setRows, r
                             fieldName="Peça"
                             control={control}
                             isMulti={false}
-
-
                         />
                     </Box>
                     {

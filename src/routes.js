@@ -31,6 +31,7 @@ import SupplierPage from './pages/Supplier/SupplierPage';
 import FormSupplier from './pages/Supplier/FormSupplier';
 import { AppContext } from './context/context';
 import LogsPage from './pages/Logs/LogsPage';
+import InvoicePage from './pages/Invoice/InvoicePage';
 
 // ----------------------------------------------------------------------
 
@@ -44,7 +45,7 @@ export default function Router() {
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'usuario', element: <UserPage /> },
         { path: 'usuario/cadastrar', element: <FormUser /> },
-        { path: 'usuario/editar/:id ', element: <FormUser /> },
+        { path: 'usuario/editar/:id', element: <FormUser /> },
         { path: 'armazem', element: <ContainerPage /> },
         { path: 'armazem/cadastrar', element: <FormContainer /> },
         { path: 'armazem/editar/:id', element: <FormContainer /> },
@@ -68,6 +69,7 @@ export default function Router() {
         { path: 'encomenda/cadastrar', element: <FormOrder /> },
         { path: 'encomenda/editar/:id', element: <FormOrder /> },
         { path: 'auditoria', element: <LogsPage /> },
+        { path: 'notas-entrega', element: <InvoicePage /> },
         { path: 'fornecedor', element: <SupplierPage /> },
         { path: 'fornecedor/cadastrar', element: <FormSupplier /> },
         { path: 'fornecedor/editar/:id', element: <FormSupplier /> },

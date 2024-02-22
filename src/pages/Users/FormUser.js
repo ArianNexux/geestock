@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { Input } from '@chakra-ui/react'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AppContext } from '../../context/context';
 
@@ -46,6 +46,8 @@ export default function FormUser() {
     const [warehouseData, setWarehouseData] = useState([])
     const warehouse = watch("warehouseId")
     const position = watch("position")
+    const { id } = useParams()
+
     const roles = [
         { label: "Armazéns", value: "1" },
         { label: "Peças", value: "2" },
@@ -59,14 +61,20 @@ export default function FormUser() {
 
     const usersTypes = [
         { label: "Administrador", value: "1" },
-        { label: "Funcionário", value: "2" },
+        { label: "Gestor de Armazem", value: "2" },
+        { label: "Funcionário", value: "3" },
     ]
 
     useEffect(() => {
 
         const getData = async () => {
             const responseWarehouse = await api.get(GET_WAREHOUSE)
-
+            const response = await api.get(`users/${id}`)
+            setValue("name", response.data.name)
+            setValue("email", response.data.email)
+            setValue("company", response.data.company)
+            setValue("position", usersTypes[Number(response.data.position) - 1])
+            setValue("warehouseId", { label: response.data.warehouse.name, value: response.data.warehouse.id })
 
             setWarehouseData(responseWarehouse.data.map(e => ({
                 value: e.id,
@@ -81,6 +89,7 @@ export default function FormUser() {
     const { addToast } = Toast()
     const navigate = useNavigate()
     const onSubmit = async (data) => {
+        let response
         try {
             if (password !== confirmPassword) {
                 addToast({
@@ -88,11 +97,21 @@ export default function FormUser() {
                     status: "warning"
                 })
             } else {
-                const response = await api.post("/users", {
-                    ...data,
-                    warehouseId: warehouse.value,
-                    position: position.value
-                })
+                const url = id === undefined ? `users` : `/users/${id}`
+                if (id === undefined) {
+                    response = await api.post(url, {
+                        ...data,
+                        warehouseId: warehouse.value,
+                        position: position.value
+                    })
+                } else {
+                    response = await api.patch(url, {
+                        ...data,
+                        warehouseId: warehouse.value,
+                        position: position.value,
+                        userId: id
+                    })
+                }
                 console.log()
                 if (response.status === 201 || response.status === 200) {
                     addToast({

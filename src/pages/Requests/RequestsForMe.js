@@ -172,7 +172,33 @@ export default function RequestsForMe() {
   const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
+  const [search, setSearch] = useState("")
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        if (search.length <= 1) {
+          const url = `/request/warehouseincomming/${userData.data.warehouse.id}`;
+          const response = await api.get(url)
+          setData(response.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [search])
+  const handleSearch = async () => {
+    try {
 
+      const url = `/request/warehouseincomming/${userData.data.warehouse.id}?searchParam=${search}`;
+      const response = await api.get(url)
+      setData(response.data)
+      console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
   return (
     <>
       <Helmet>
@@ -188,14 +214,14 @@ export default function RequestsForMe() {
             Requisições para mim
           </Typography>
 
-          <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+          {userData.data?.position === "2" && <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
             Enviar Requisição
-          </Button>
+          </Button>}
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
-          <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
-          <Button variant="contained" onClick={() => { navigate("/user/cadastrar") }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
+          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo nome ou Número PR" type="email" sx={{ minWidth: "50%" }} />
+          <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
@@ -222,9 +248,7 @@ export default function RequestsForMe() {
 
                       return (
                         <TableRow hover key={id} tabIndex={-1} role="checkbox" >
-                          <TableCell padding="checkbox">
-                            <Checkbox onChange={(event) => handleClick(event, "name")} />
-                          </TableCell>
+
 
                           <TableCell component="th" scope="row" padding="none">
                             <Stack direction="row" alignItems="center" spacing={2}>
@@ -239,7 +263,7 @@ export default function RequestsForMe() {
 
 
                           <TableCell align="left">
-                            <Label color={(state === 'Em analise' && 'error') || 'success'}>{sentenceCase(state)}</Label>
+                            <Label color={(state === 'Finalizada' && 'error') || 'success'}>{sentenceCase(state)}</Label>
                           </TableCell>
 
                           <TableCell align="right">

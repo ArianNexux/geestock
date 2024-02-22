@@ -6,10 +6,11 @@ function LabelForm({
   isRequired = false,
   helper,
   isDisabled = false,
-  sx={}
+  showLabel = true,
+  sx = {}
 }) {
   return (
-    <FormLabel sx={sx}>
+    showLabel && <FormLabel sx={sx}>
       <Flex>
         <Text as="b" fontSize={fontSize} textTransform="uppercase" me={1}>
           {title}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box'
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -13,7 +13,9 @@ import Checkbox from '@mui/material/Checkbox';
 import ModalNumberSeries from '../modal/modalNumberSeries'
 
 export default function TableRequestForMe({ rows, hasPrice = false, showInput = false, errors, register, partNumber, setPartNumber, setNumberSeries }) {
-
+    useEffect(() => {
+        console.log(rows)
+    }, [])
     const [selectedRow, setSelectedRow] = useState({})
     const [isOpenModalNumber, setIsOpenModalNumber] = useState(false)
     return (
@@ -23,6 +25,8 @@ export default function TableRequestForMe({ rows, hasPrice = false, showInput = 
                     <TableRow>
 
                         <TableCell>Nome da Peça</TableCell>
+                        <TableCell align="center">Local da Peça    </TableCell>
+                        <TableCell align="center">Quantidade Em Stock    </TableCell>
                         <TableCell align="center">Quantidade Requisitada    </TableCell>
                         <TableCell align="center">Quantidade Fornecida</TableCell>
 
@@ -31,7 +35,6 @@ export default function TableRequestForMe({ rows, hasPrice = false, showInput = 
                             <TableCell align="center">Preço</TableCell>
 
                         }
-                        <TableCell align="center">Nº de Série</TableCell>
                         <TableCell align="center">Ação</TableCell>
                     </TableRow>
                 </TableHead>
@@ -47,6 +50,8 @@ export default function TableRequestForMe({ rows, hasPrice = false, showInput = 
                             <TableCell component="th" scope="row">
                                 {row.piece.label}
                             </TableCell>
+                            <TableCell align="center">{row.piece.location}</TableCell>
+                            <TableCell align="center">{row.piece.quantity}</TableCell>
                             <TableCell align="center">{row.quantity}</TableCell>
 
                             <TableCell align="center">
@@ -66,24 +71,6 @@ export default function TableRequestForMe({ rows, hasPrice = false, showInput = 
                                 </Box>
                             </TableCell>
 
-
-
-                            <TableCell align="center">
-
-                                <Box mb={5}>
-                                    <Input
-                                        placeholder={"Insira o part number"}
-                                        type="number"
-                                        disabled={row.quantity > 1}
-                                        onBlur={(e) => {
-                                            if (e.target.value !== "")
-                                                row.numberSeries = [e.target.value];
-                                        }}
-                                        sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
-                                    />
-
-                                </Box>
-                            </TableCell>
                             <TableCell>
                                 <Box ml={10}>
                                     <Button

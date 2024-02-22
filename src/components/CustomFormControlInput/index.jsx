@@ -11,11 +11,13 @@ export default function CustomFormControlInput({
     register,
     placeholder,
     type,
-    width="60%"
+    width="60%",
+    showLabel=true
 }){
     return (
         <FormControl isInvalid={!!errors[fieldNameObject]}>
               <LabelForm
+                        showLabel={showLabel}
                   title={fieldName}  
                   isRequired={isRequired}            
               />

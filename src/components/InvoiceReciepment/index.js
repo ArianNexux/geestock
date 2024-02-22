@@ -39,7 +39,7 @@ const MyDocument = (data) => {
                     {
                         text: [
                             {
-                                text: "\tNota de Entrega - GEESTOCK", style: 'header', margin: [50, 5, 50, 5],
+                                text: "\tNota de Entrega - GESSTOCK", style: 'header', margin: [50, 5, 50, 5],
                             },
                             { text: '\n' },
                             { text: '\n' },

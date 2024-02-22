@@ -41,7 +41,7 @@ export default function LoginPage() {
   return (
     <>
       <Helmet>
-        <title> Login | GEESTOCK </title>
+        <title> Login | GESSTOCK </title>
       </Helmet>
 
       <StyledRoot>
@@ -54,7 +54,7 @@ export default function LoginPage() {
         <Container maxWidth="sm">
           <StyledContent>
             <Typography variant="h4" gutterBottom>
-              Iniciar Sessão - GEESTOCK
+              Iniciar Sessão - GESSTOCK
             </Typography>
 
             {
