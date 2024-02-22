@@ -10,6 +10,7 @@ export default function CustomFormControlTextArea({
     isRequired = true,
     register,
     placeholder,
+    defaultValue,
     sx={}
 }){
     return (
@@ -18,7 +19,7 @@ export default function CustomFormControlTextArea({
                   title={fieldName}  
                   isRequired={isRequired}            
               />
-            <Textarea  rows={4}
+            <Textarea defaultValue={defaultValue} rows={4}
  sx={{width:"70%", height:"200px,", border:"1.5px solid grey", padding:"6px", borderRadius: "4px", marginTop:"15px"}} isDisabled={isDisabled} placeholder={placeholder} {...register(fieldNameObject)} />               
         <FormErrorMessage>
             {errors[fieldNameObject] && <>{REQUIRED_FIELD}</>}

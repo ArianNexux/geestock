@@ -40,7 +40,8 @@ import { AppContext } from '../../context/context';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome da Requisição', alignRight: false },
-  { id: 'company', label: 'Armazém', alignRight: false },
+  { id: 'pr', label: 'PR', alignRight: false },
+  { id: 'company', label: 'Armazém de destino', alignRight: false },
   { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
@@ -239,7 +240,7 @@ export default function RequestsPage() {
                 />
                 <TableBody>
                   {data.map((row) => {
-                    const { id, name, quantity, state, warehouseIncomming: { name: warehouseName } } = row;
+                    const { id, name, quantity, state, warehouseIncomming: { name: warehouseName }, numberPr } = row;
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" >
@@ -253,6 +254,7 @@ export default function RequestsPage() {
                         </TableCell>
 
 
+                        <TableCell align="left">{numberPr}</TableCell>
                         <TableCell align="left">{warehouseName}</TableCell>
 
 

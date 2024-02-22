@@ -178,6 +178,7 @@ export default function FormRequests() {
     const name = watch("name")
     const numberPr = watch("numberPr")
     const [data, setData] = useState([])
+    const [isFinished, setIsFinished] = useState(false)
     const [dataPieces, setDataPieces] = useState([])
     const [isOpen, setIsOpen] = useState(false)
     const [Open, setOpen] = useState(false)
@@ -192,7 +193,7 @@ export default function FormRequests() {
             try {
                 const url = `/warehouse`;
                 const response = await api.get(url)
-                setData(response.data.filter(e => e.id !== userData.data.warehouse.id).map(e => ({
+                setData(response.data.map(e => ({
                     value: e.id,
                     label: e.name
                 })))
@@ -225,6 +226,7 @@ export default function FormRequests() {
             const url = `/request/${id}`
             const response = await api.get(url)
             console.log("FINAL RESPONSE", response.data)
+            setIsFinished(response.data.state === "Finalizada" || userData.data.position === "2")
             setValue("name", response.data.name)
             setValue("numberPr", response.data.numberPr)
             setValue("container", { label: response.data.warehouseIncomming.name, value: response.data.warehouseIdIncomming })
@@ -253,7 +255,7 @@ export default function FormRequests() {
     const handleSearch = async () => {
         try {
 
-            const url = `/piece/warehouse/${warehouse.value}?searchParam=${search}`;
+            const url = `/request/warehouse/${warehouse.value}?searchParam=${search}`;
             const response = await api.get(url)
             setDataPieces(response.data)
 
@@ -266,7 +268,7 @@ export default function FormRequests() {
         const getData = async () => {
             try {
                 if (search.length <= 1) {
-                    const url = `/piece/warehouse/${warehouse.value}`;
+                    const url = `/request/warehouse/${warehouse.value}`;
                     const response = await api.get(url)
                     setDataPieces(response.data)
                 }
@@ -329,7 +331,7 @@ export default function FormRequests() {
                 Início > Requisições > Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
-                    <Button sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
+                    <Button onClick={() => { navigate(`/dashboard/requisicao`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>
@@ -349,7 +351,7 @@ export default function FormRequests() {
                                 errors={errors}
                                 fieldName={`Nome da Requisição`}
                                 fieldNameObject="name"
-                                isDisabled={false}
+                                isDisabled={isFinished}
                                 register={register}
                                 type="text"
                                 placeholder="Insira o nome da requisição..."
@@ -360,7 +362,7 @@ export default function FormRequests() {
                                 errors={errors}
                                 fieldName={`Número da PR`}
                                 fieldNameObject="numberPr"
-                                isDisabled={false}
+                                isDisabled={isFinished}
                                 register={register}
                                 type="text"
                                 placeholder="Insira o número da PR da requisição..."
@@ -514,9 +516,9 @@ export default function FormRequests() {
     />   */ }
 
                         <Box mt={5}>
-                            <Button sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained" onClick={() => { console.log(errors) }} type="submit">
+                            {!isFinished && <Button sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained" onClick={() => { console.log(errors) }} type="submit">
                                 Cadastrar
-                            </Button>
+                            </Button>}
                         </Box >
                     </Container >
                 </form >

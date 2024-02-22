@@ -68,14 +68,16 @@ export default function FormUser() {
     useEffect(() => {
 
         const getData = async () => {
-            const responseWarehouse = await api.get(GET_WAREHOUSE)
-            const response = await api.get(`users/${id}`)
-            setValue("name", response.data.name)
-            setValue("email", response.data.email)
-            setValue("company", response.data.company)
-            setValue("position", usersTypes[Number(response.data.position) - 1])
-            setValue("warehouseId", { label: response.data.warehouse.name, value: response.data.warehouse.id })
-
+            const responseWarehouse = await api.get(`${GET_WAREHOUSE}?searchParam= `)
+            if (id !== undefined) {
+                const response = await api.get(`users/${id}`)
+                console.log("NOVA DATA", response)
+                setValue("name", response.data.name)
+                setValue("email", response.data.email)
+                setValue("company", response.data.company)
+                setValue("position", usersTypes[Number(response.data.position) - 1])
+                setValue("warehouseId", { label: response.data.warehouse?.name, value: response.data.warehouse?.id })
+            }
             setWarehouseData(responseWarehouse.data.map(e => ({
                 value: e.id,
                 label: e.name
@@ -141,7 +143,7 @@ export default function FormUser() {
                 Início > Utilizadores > Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
-                    <Button sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
+                    <Button onClick={() => { navigate(`/dashboard/usuario`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>

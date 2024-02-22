@@ -56,6 +56,9 @@ export default function FormContainer() {
             setValue("description", response.data.description)
             setValue("company", response.data.company)
             setValue("capacity", response.data.capacity)
+            setValue("province", response.data.province)
+            setValue("country", response.data.country)
+            setValue("address", response.data.address)
             setValue("flag", response.data.flag)
             setValue("code", response.data.code)
             setValue("company", response.data.company)
@@ -102,6 +105,13 @@ export default function FormContainer() {
                 })
                 navigate("/dashboard/armazem")
             }
+            if (response.status === 200) {
+                addToast({
+                    title: "Armazém actualizado com sucesso",
+                    status: "success"
+                })
+                navigate("/dashboard/armazem")
+            }
         } catch (e) {
             console.log("Erro", e)
         }
@@ -117,7 +127,7 @@ export default function FormContainer() {
                 Início > Armazém > Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
-                    <Button sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
+                    <Button onClick={() => { navigate(`/dashboard/armazem`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>

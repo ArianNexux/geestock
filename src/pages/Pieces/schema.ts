@@ -10,7 +10,7 @@ export const UserSchema = z.object({
     min: z.string().nonempty(REQUIRED_FIELD),
     target: z.string().nonempty(REQUIRED_FIELD),
     price: z.string().nonempty(REQUIRED_FIELD),
-    locationInWarehouse: z.string().nonempty(REQUIRED_FIELD),
+    locationInWarehouse: z.string().optional(),
     supplierId: z.object({
         label: z.string(),
         value: z.string()

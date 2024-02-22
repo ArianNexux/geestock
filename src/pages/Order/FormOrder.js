@@ -113,7 +113,7 @@ export default function FormOrder() {
     const [orderBy, setOrderBy] = useState('name');
     const [filterName, setFilterName] = useState('');
     const [actualId, setActualId] = useState(0);
-    const [piecesData, setPiecesData] = useState([])
+    const [isFinished, setIsFinished] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const [rows, setRows] = useState([])
     const { userData } = useContext(AppContext)
@@ -201,6 +201,7 @@ export default function FormOrder() {
         const fullFillFormData = async (data) => {
             const url = `/order/${id}`
             const response = await api.get(url)
+            setIsFinished(response.data.state === 'Finalizada')
             setValue("description", response.data.description)
             setValue("reference", response.data.reference)
             setValue("imbl_awb", response.data.imbl_awb)
@@ -282,7 +283,7 @@ export default function FormOrder() {
                     Início {'>'} Encomendas {'>'} Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
-                    <Button sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
+                    <Button onClick={() => { navigate(`/dashboard/encomenda`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>
@@ -299,12 +300,12 @@ export default function FormOrder() {
                         <Box mb={5}>
                             <CustomFormControlTextArea
                                 errors={errors}
-                                fieldName="Descrição"
+                                fieldName="Nome da Encomenda"
                                 fieldNameObject="description"
-                                isDisabled={false}
+                                isDisabled={isFinished}
                                 register={register}
                                 isRequired={false}
-                                placeholder="Descrição"
+                                placeholder="Nome da Encomenda"
                             />
                         </Box>
                         <Box mb={5}>
@@ -312,7 +313,7 @@ export default function FormOrder() {
                                 errors={errors}
                                 fieldName="BL/AWB"
                                 fieldNameObject="imbl_awb"
-                                isDisabled={false}
+                                isDisabled={isFinished}
                                 register={register}
                                 isRequired={false}
                                 placeholder="IMBL/AWB"
@@ -323,7 +324,7 @@ export default function FormOrder() {
                                 errors={errors}
                                 fieldName="Nº da Encomenda"
                                 fieldNameObject="number_order"
-                                isDisabled={false}
+                                isDisabled={isFinished}
                                 register={register}
                                 isRequired={false}
                                 placeholder="Nº da Encomenda"
@@ -335,7 +336,7 @@ export default function FormOrder() {
                                 errors={errors}
                                 fieldName="Referencia"
                                 fieldNameObject="reference"
-                                isDisabled={false}
+                                isDisabled={isFinished}
                                 register={register}
                                 isRequired={false}
                                 type="text"

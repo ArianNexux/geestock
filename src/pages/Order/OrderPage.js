@@ -40,7 +40,7 @@ import api from '../../utils/api';
 import { AppContext } from '../../context/context';
 // ----------------------------------------------------------------------
 const TABLE_HEAD = [
-  { id: 'description', label: 'Descrição', alignRight: false },
+  { id: 'description', label: 'Nome', alignRight: false },
   { id: 'imbl_awb', label: 'BL/AWB', alignRight: false },
   { id: 'reference', label: 'Referência', alignRight: false },
   { id: 'actions', label: 'Acção', alignRight: false },

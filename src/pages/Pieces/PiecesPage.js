@@ -247,6 +247,7 @@ export default function PiecesPage() {
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" noWrap style={{ textIndent: '20px' }}>
                               {name}
+                              <p>{description}</p>
                             </Typography>
                           </Stack>
                         </TableCell>

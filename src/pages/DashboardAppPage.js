@@ -59,6 +59,14 @@ const TABLE_HEAD = [
   { id: 'description', label: 'Descrição', alignRight: false },
   { id: 'quantity', label: 'Quantidade', alignRight: false },
 ];
+
+const TABLE_HEAD_ALL = [
+  { id: 'name', label: 'Nome', alignRight: false },
+  { id: 'partNumber', label: 'PN', alignRight: false },
+  { id: 'warehouse', label: 'Armazém', alignRight: false },
+  { id: 'description', label: 'Descrição', alignRight: false },
+  { id: 'quantity', label: 'Quantidade', alignRight: false },
+];
 // ----------------------------------------------------------------------
 
 function descendingComparator(a, b, orderBy) {
@@ -184,7 +192,7 @@ export default function DashboardAppPage() {
         const responseWarehouse = await api.get("/warehouse")
         setData(response.data)
         setDataWarehouse(responseWarehouse.data)
-        console.log(response.data)
+        console.log("WAREHOUSE DATA", response.data)
       } catch (e) {
         console.log(e)
       }
@@ -290,7 +298,7 @@ export default function DashboardAppPage() {
                     <UserListHead
                       order={order}
                       orderBy={orderBy}
-                      headLabel={TABLE_HEAD}
+                      headLabel={filter === "Todos" ? TABLE_HEAD_ALL : TABLE_HEAD}
                       rowCount={USERLIST.length}
                       numSelected={selected.length}
                       onRequestSort={handleRequestSort}
@@ -298,7 +306,8 @@ export default function DashboardAppPage() {
                     />
                     <TableBody>
                       {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                        const { id, name, description, quantity, partNumber } = row;
+                        row.warehouse = filter === "Todos" ? row.warehouse : { name: '' }
+                        const { id, name, description, quantity, partNumber, warehouse: { name: warehouseName } } = row;
                         const selectedUser = selected.indexOf(description) !== -1;
 
                         return (
@@ -313,6 +322,8 @@ export default function DashboardAppPage() {
                                 </Typography>
                               </TableCell>
                               <TableCell align="left">{partNumber}</TableCell>
+
+                              {filter === "Todos" && <TableCell align="left">{warehouseName}</TableCell>}
 
                               <TableCell align="left">{description}</TableCell>
 

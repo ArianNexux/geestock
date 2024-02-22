@@ -169,6 +169,34 @@ export default function InvoicePage() {
     const response = await api.get(`/invoice?requestId=${actualId}`)
     MyDocument(response.data)
   }
+
+  const [search, setSearch] = useState("")
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        if (search.length <= 1) {
+          const url = userData.data.position === "1" ? `/request/?searchParam=${search}` : `/request/warehouseoutcomming/${userData.data.warehouse.id}`;;
+          const response = await api.get(url)
+          setData(response.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [search])
+  const handleSearch = async () => {
+    try {
+
+      const url = userData.data.position === "1" ? `/request/?searchParam=${search}` : `/request/warehouseoutcomming?searchParam=${search}`;
+      const response = await api.get(url)
+      setData(response.data)
+      console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
   return (
     <>
       <Helmet>
@@ -187,8 +215,8 @@ export default function InvoicePage() {
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
-          <TextField variant="standard" label="Pesquisar" type="email" sx={{ minWidth: "50%" }} />
-          <Button variant="contained" onClick={() => { }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
+          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo nome ou Número PR" type="email" sx={{ minWidth: "50%" }} />
+          <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
         </Stack>
@@ -305,10 +333,7 @@ export default function InvoicePage() {
           Visualizar
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Eliminar
-        </MenuItem>
+
       </Popover>
     </>
   );

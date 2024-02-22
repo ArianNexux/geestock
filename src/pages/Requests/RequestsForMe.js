@@ -42,7 +42,8 @@ import { ModalConfirmRequest } from '../../components/modal/modalConfirmRequest'
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Nome da Peça', alignRight: false },
+  { id: 'name', label: 'Nome da Requisição', alignRight: false },
+  { id: 'pr', label: 'PR', alignRight: false },
   { id: 'company', label: 'Armazem', alignRight: false },
   { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
@@ -214,7 +215,7 @@ export default function RequestsForMe() {
             Requisições para mim
           </Typography>
 
-          {userData.data?.position === "2" && <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+          {userData.data?.position === "1" && <Button variant="contained" onClick={() => { navigate("/dashboard/requisicao/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
             Enviar Requisição
           </Button>}
         </Stack>
@@ -244,7 +245,7 @@ export default function RequestsForMe() {
                   {
                     data.map((row) => {
 
-                      const { id, state, name, warehouseOutcomming: { name: warehouseName } } = row;
+                      const { id, state, name, numberPr, warehouseOutcomming: { name: warehouseName } } = row;
 
                       return (
                         <TableRow hover key={id} tabIndex={-1} role="checkbox" >
@@ -258,6 +259,7 @@ export default function RequestsForMe() {
                             </Stack>
                           </TableCell>
 
+                          <TableCell align="left">{numberPr}</TableCell>
                           <TableCell align="left">{warehouseName}</TableCell>
 
 

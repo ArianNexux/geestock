@@ -90,7 +90,7 @@ export default function FormPieces() {
             console.log("FINAL RESPONSE", response.data)
             setValue("name", response.data.name)
             setValue("description", response.data.description)
-            setValue("locationInWarehouse", response.data.partNumber)
+            setValue("locationInWarehouse", response.data.locationInWarehouse ?? "")
             setValue("partNumber", response.data.partNumber)
             setValue("price", response.data.price.toString())
             setValue("brand_name", response.data.brand_name)
@@ -166,7 +166,7 @@ export default function FormPieces() {
                 Início > Peças > Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
-                    <Button sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
+                    <Button onClick={() => { navigate(`/dashboard/peca`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>
@@ -219,7 +219,7 @@ export default function FormPieces() {
                                 errors={errors}
                                 fieldName="Localização da Peça no armazém"
                                 fieldNameObject="locationInWarehouse"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "1"}
                                 register={register}
                                 isRequired={false}
                                 placeholder="Breve descrição da Localização da Peça"

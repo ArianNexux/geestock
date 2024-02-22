@@ -32,7 +32,6 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
                             <TableCell align="center">Preço</TableCell>
 
                         }
-                        <TableCell align="center">Preço</TableCell>
 
                     </TableRow>
                 </TableHead>
@@ -71,20 +70,7 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
                                 <TableCell align="center">{row.price}</TableCell>
 
                             }
-                            <TableCell align="center">
 
-                                <Box mb={5}>
-                                    <Input
-                                        placeholder={"Insira o preço..."}
-                                        type="number"
-                                        onBlur={(e) => {
-                                            row.priceBought.push(e.target.value);
-                                        }}
-                                        sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
-                                    />
-
-                                </Box>
-                            </TableCell>
                             {
                                 /*
                                 <TableCell>

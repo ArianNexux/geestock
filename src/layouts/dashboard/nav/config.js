@@ -32,7 +32,14 @@ const navConfig = [
     title: 'Requisições',
     path: '/dashboard/requisicao',
     icon: iconPng('pedido'),
-    permission: ["1", "2", "3"]
+    permission: ["1"]
+
+  },
+  {
+    title: 'Requisições',
+    path: '/dashboard/requisicao/minhas',
+    icon: iconPng('pedido'),
+    permission: ["2", "3"]
 
   },
   {

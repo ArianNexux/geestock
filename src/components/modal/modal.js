@@ -89,7 +89,6 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
 
             const pieceData = rows.map(row => ({
                 pieceId: row.piece.value,
-                priceOfEachPiece: row.priceBought[row.priceBought.length - 1],
                 quantity: row.quantityGiven[row.quantityGiven.length - 1]
             }))
 
