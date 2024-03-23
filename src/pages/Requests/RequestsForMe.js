@@ -38,6 +38,7 @@ import api from '../../utils/api';
 import { AppContext } from '../../context/context';
 import { Toast } from '../../components/Toast';
 import { ModalConfirmRequest } from '../../components/modal/modalConfirmRequest';
+import MyRequestNote from '../../components/InvoiceReciepment/request-note'
 
 // ----------------------------------------------------------------------
 
@@ -89,7 +90,7 @@ export default function RequestsForMe() {
   const [order, setOrder] = useState('asc');
 
   const [selected, setSelected] = useState([]);
-
+  const [actualState, setActualState] = useState(false)
   const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
@@ -98,10 +99,11 @@ export default function RequestsForMe() {
 
   const { addToast } = Toast()
 
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event, id, state) => {
     console.log(id)
     setOpen(event.currentTarget);
     setCurrentId(id)
+    setActualState(state.toString().toLowerCase().includes("finalizada"))
   };
 
   const handleCloseMenu = () => {
@@ -122,7 +124,12 @@ export default function RequestsForMe() {
     }
     setSelected([]);
   };
-
+  const handleOpenDocument = async () => {
+    const url = `/request/${currentId}`
+    const response = await api.get(url)
+    console.log(response.data)
+    MyRequestNote(response.data)
+  }
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
     let newSelected = [];
@@ -153,12 +160,12 @@ export default function RequestsForMe() {
   };
   const [data, setData] = useState([])
   const [isOpen, setIsOpen] = useState(false)
-  const { userData } = useContext(AppContext)
+  const { userData, curentWarehouse } = useContext(AppContext)
 
   useEffect(() => {
     const getData = async () => {
       try {
-        const url = `/request/warehouseincomming/${userData.data.warehouse.id}`;
+        const url = `/request/warehouseincomming/${curentWarehouse}?onlyActive=1`;
         const response = await api.get(url)
         setData(response.data)
         console.log("LOGAR", response.data)
@@ -178,7 +185,7 @@ export default function RequestsForMe() {
     const getData = async () => {
       try {
         if (search.length <= 1) {
-          const url = `/request/warehouseincomming/${userData.data.warehouse.id}`;
+          const url = `/request/warehouseincomming/${curentWarehouse}?onlyActive=1`;
           const response = await api.get(url)
           setData(response.data)
         }
@@ -187,11 +194,11 @@ export default function RequestsForMe() {
       }
     }
     getData()
-  }, [search])
+  }, [search, curentWarehouse])
   const handleSearch = async () => {
     try {
 
-      const url = `/request/warehouseincomming/${userData.data.warehouse.id}?searchParam=${search}`;
+      const url = `/request/warehouseincomming/${curentWarehouse}?searchParam=${search}&onlyActive=1`;
       const response = await api.get(url)
       setData(response.data)
       console.log(response.data)
@@ -269,7 +276,7 @@ export default function RequestsForMe() {
                           </TableCell>
 
                           <TableCell align="right">
-                            <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id); }}>
+                            <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, state); }}>
                               <Iconify icon={'eva:more-vertical-fill'} />
                             </IconButton>
                           </TableCell>
@@ -340,13 +347,23 @@ export default function RequestsForMe() {
           },
         }}
       >
-        <MenuItem onClick={(e) => {
-          setIsOpen(true)
-        }}>
+        {!actualState ?
+          (<MenuItem onClick={(e) => {
+            setIsOpen(true)
+          }}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Aceitar
+          </MenuItem>)
+          :
+          (<MenuItem onClick={() => { navigate(`/dashboard/requisicao/editar/${currentId}`) }}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Ver mais
+          </MenuItem>)
+        }
+        <MenuItem onClick={() => { handleOpenDocument() }}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Aceitar
+          Imprimir
         </MenuItem>
-
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Rejeitar

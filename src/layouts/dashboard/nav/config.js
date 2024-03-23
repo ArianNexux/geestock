@@ -15,20 +15,6 @@ const navConfig = [
 
   },
   {
-    title: 'Armazéns',
-    path: '/dashboard/armazem',
-    icon: iconPng('containers'),
-    permission: ["1"]
-
-  },
-  {
-    title: 'Peças',
-    path: '/dashboard/peca',
-    icon: iconPng('pecas-de-reposicao'),
-    permission: ["1", "2", "3"]
-
-  },
-  {
     title: 'Requisições',
     path: '/dashboard/requisicao',
     icon: iconPng('pedido'),
@@ -41,6 +27,12 @@ const navConfig = [
     icon: iconPng('pedido'),
     permission: ["2", "3"]
 
+  },
+  {
+    title: 'Encomendas',
+    path: '/dashboard/encomenda',
+    icon: iconPng('caixa-de-entrega'),
+    permission: ["1", "2", "3"]
   },
   {
     title: 'Notas de Entrega',
@@ -63,6 +55,21 @@ const navConfig = [
     permission: ["1"]
 
   },
+
+  {
+    title: 'Armazéns',
+    path: '/dashboard/armazem',
+    icon: iconPng('containers'),
+    permission: ["1"]
+
+  },
+  {
+    title: 'Peças',
+    path: '/dashboard/peca',
+    icon: iconPng('pecas-de-reposicao'),
+    permission: ["1", "2", "3"]
+
+  },
   {
     title: 'Categorias',
     path: '/dashboard/categoria',
@@ -70,12 +77,7 @@ const navConfig = [
     permission: ["1"]
 
   },
-  {
-    title: 'Encomendas',
-    path: '/dashboard/encomenda',
-    icon: iconPng('caixa-de-entrega'),
-    permission: ["1", "2", "3"]
-  },
+
   {
     title: 'Fornecedores',
     path: '/dashboard/fornecedor',

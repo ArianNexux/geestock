@@ -1,8 +1,8 @@
-import { useContext } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types';
 // @mui
 import { styled } from '@mui/material/styles';
-import { Box, Stack, AppBar, Toolbar, IconButton } from '@mui/material';
+import { Box, Stack, AppBar, Toolbar, IconButton, Select, FormControl, MenuItem, InputLabel } from '@mui/material';
 // utils
 import { bgBlur } from '../../../utils/cssStyles';
 // components
@@ -12,8 +12,7 @@ import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
 import NotificationsPopover from './NotificationsPopover';
 import { AppContext, AuthContext } from '../../../context/context';
-
-// ----------------------------------------------------------------------
+import api from '../../../utils/api'; // ----------------------------------------------------------------------
 
 const NAV_WIDTH = 280;
 
@@ -44,7 +43,23 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
-  const { userData } = useContext(AppContext)
+  const { userData, setCurentWarehouse, curentWarehouse } = useContext(AppContext)
+  const [stateOrder, setStateOrder] = useState({})
+  const [data, setData] = useState([])
+
+  const [search, setSearch] = useState("")
+
+  useEffect(() => {
+    if (userData.data.position !== "1") {
+      setStateOrder(userData.data.warehouse[0]?.id)
+      setCurentWarehouse(userData.data.warehouse[0]?.id)
+    }
+  }, [])
+  const handleChange = async (e) => {
+    console.log("VALUE OF", e)
+    setStateOrder(e.target.value)
+    setCurentWarehouse(e.target.value ?? curentWarehouse)
+  }
 
   return (
     <StyledRoot>
@@ -61,8 +76,27 @@ export default function Header({ onOpenNav }) {
         </IconButton>
 
         <Searchbar />
-        <Box sx={{ flexGrow: 1 }} />
 
+        <Box sx={{ flexGrow: 1 }} />
+        {userData.data?.position !== "1" && <Box sx={{ width: '400px' }}>
+          <FormControl variant="standard" sx={{ m: 1, minWidth: '100%', marginRight: '20px' }}>
+            <InputLabel id="demo-simple-select-standard-label">Armazem Selecionado</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={stateOrder}
+              label="Armazem Selecionado"
+              onChange={handleChange}
+            >
+              {
+                userData.data.warehouse.map(e => (
+                  <MenuItem value={e.id}>{e.name}</MenuItem>
+                ))
+              }
+
+            </Select>
+          </FormControl>
+        </Box>}
         <Stack
           direction="row"
           alignItems="center"
@@ -77,7 +111,9 @@ export default function Header({ onOpenNav }) {
           {userData.data?.position === "1" && <NotificationsPopover />}
           <AccountPopover />
         </Stack>
+
       </StyledToolbar>
-    </StyledRoot>
+
+    </StyledRoot >
   );
 }

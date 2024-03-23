@@ -29,18 +29,21 @@ const styleChildBox = {
 
 const buttonStyle = {
     backgroundColor: 'primary',
+    marginRight: '10px',
 };
 
 function InputsSeriesNumber({ quantity, numberSeries }) {
     const indents = [];
-    console.log(numberSeries)
+    const [newValue, setNewValue] = React.useState()
+    console.log("QUANTIDADE QUE CHEA AO INPUT", quantity)
     for (let i = 0; i < quantity; i++) {
         indents.push(
             <Input
                 placeholder={"Insira o numero de série"}
                 type="number"
-                value={numberSeries[i]}
-                onBlur={(e) => { console.log(e.target.value); numberSeries.push(e.target.value) }}
+                key={i}
+                defaultValue={numberSeries[i]}
+                onBlur={(e) => { numberSeries.splice(i, 1, e.target.value) }}
                 sx={{ width: "70%", height: "40px", border: "1.5px solid grey", borderRadius: "4px", marginBottom: '20px', textIndent: "5px", marginTop: "15px" }}
             />
         );
@@ -89,6 +92,9 @@ export default function ModalNumberSeries({ isOpen, setIsOpen, quantity, numberS
                     <Box>
                         <Button variant="contained" sx={buttonStyle} onClick={(e) => { handleClose() }}>
                             Confirmar
+                        </Button>
+                        <Button variant="contained" sx={buttonStyle} onClick={(e) => { handleClose() }}>
+                            Voltar
                         </Button>
                     </Box>
                 </Box>

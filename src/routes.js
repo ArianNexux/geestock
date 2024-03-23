@@ -46,6 +46,7 @@ export default function Router() {
         { path: 'usuario', element: <UserPage /> },
         { path: 'usuario/cadastrar', element: <FormUser /> },
         { path: 'usuario/editar/:id', element: <FormUser /> },
+        { path: 'conta/editar/:type/:id', element: <FormUser /> },
         { path: 'armazem', element: <ContainerPage /> },
         { path: 'armazem/cadastrar', element: <FormContainer /> },
         { path: 'armazem/editar/:id', element: <FormContainer /> },

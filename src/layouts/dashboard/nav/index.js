@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
 // @mui
 import { styled, alpha } from '@mui/material/styles';
@@ -13,6 +13,10 @@ import Logo from '../../../components/logo';
 import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
 //
+import usersTypes from '../../../utils/usersTypes';
+
+import { AppContext } from '../../../context/context';
+
 import navConfig from './config';
 // import LogoImage from '../../../../public/assets/logo-sonasurf.png'
 // ----------------------------------------------------------------------
@@ -38,6 +42,7 @@ export default function Nav({ openNav, onCloseNav }) {
   const { pathname } = useLocation();
 
   const isDesktop = useResponsive('up', 'lg');
+  const { userData } = useContext(AppContext)
 
   useEffect(() => {
     if (openNav) {
@@ -60,16 +65,18 @@ export default function Nav({ openNav, onCloseNav }) {
       <Box sx={{ mb: 5, mx: 2.5 }}>
         <Link underline="none">
           <StyledAccount>
-            <Avatar> BJ </Avatar>
 
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {account.displayName}
+                {userData.data.name}
               </Typography>
 
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {account.role}
+                Nível :  {usersTypes[Number(userData.data.position) - 1].label}
               </Typography>
+              {userData.data.position === "1" && <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Armazém: {userData.data.warehouse.name}
+              </Typography>}
             </Box>
           </StyledAccount>
         </Link>

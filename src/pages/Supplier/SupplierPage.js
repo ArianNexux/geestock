@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import {
@@ -25,6 +25,7 @@ import {
   TextField
 } from '@mui/material';
 // components
+import { AppContext } from '../../context/context';
 import Label from '../../components/label/Label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
@@ -38,6 +39,7 @@ import api from '../../utils/api';
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome', alignRight: false },
   { id: 'code', label: 'Código', alignRight: false },
+  { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
 
@@ -76,7 +78,7 @@ export default function SupplierPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
-
+  const { userData } = useContext(AppContext)
   const [order, setOrder] = useState('asc');
 
   const [selected, setSelected] = useState([]);
@@ -88,9 +90,9 @@ export default function SupplierPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [actualId, setActualId] = useState(0);
 
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event, id, status) => {
     setActualId(id)
-
+    setStatus(status)
     setOpen(event.currentTarget);
   };
 
@@ -143,6 +145,7 @@ export default function SupplierPage() {
   };
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+  const [status, setStatus] = useState(false);
 
   const [data, setData] = useState([])
   const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
@@ -150,7 +153,7 @@ export default function SupplierPage() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await api.get("/supplier")
+        const response = await api.get(`/supplier?onlyActive=${userData.data.position === "1" ? "0" : "1"}`)
         setData(response.data)
         console.log(response.data)
       } catch (e) {
@@ -164,7 +167,7 @@ export default function SupplierPage() {
     const getData = async () => {
       try {
         if (search.length <= 1) {
-          const url = `/supplier`;
+          const url = `/supplier?onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
           const response = await api.get(url)
           setData(response.data)
         }
@@ -177,10 +180,25 @@ export default function SupplierPage() {
   const handleSearch = async () => {
     try {
 
-      const url = `/supplier?searchParam=${search}`;
+      const url = `/supplier?searchParam=${search}&onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
       const response = await api.get(url)
       setData(response.data)
       console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const handleChangeStatus = async (e) => {
+    try {
+
+      const url = `supplier/change-status/${actualId}?status=${status ? 0 : 1}`;
+      await api.get(url)
+      const response = await api.get('/supplier')
+      setData(response.data)
+
+      setOpen(false);
 
     } catch (e) {
       console.log(e)
@@ -228,7 +246,7 @@ export default function SupplierPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, code } = row;
+                    const { id, name, code, isActive } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -238,9 +256,11 @@ export default function SupplierPage() {
                         <TableCell align="left">{name}</TableCell>
 
                         <TableCell align="left">{code}</TableCell>
-
+                        <TableCell align="left">
+                          <Label color={isActive ? 'success' : 'error'}>{isActive ? 'Activo' : 'Inactivo'}</Label>
+                        </TableCell>
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, isActive) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -315,9 +335,9 @@ export default function SupplierPage() {
             Editar
           </MenuItem>
 
-          <MenuItem sx={{ color: 'error.main' }}>
+          <MenuItem onClick={() => { handleChangeStatus() }} >
             <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-            Eliminar
+            {!status ? 'Activar' : 'Desactivar'}
           </MenuItem>
         </Popover>
       </Container >

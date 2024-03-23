@@ -9,26 +9,23 @@ import { AppContext } from '../../../context/context';
 
 // ----------------------------------------------------------------------
 
-const MENU_OPTIONS = [
-  {
-    label: 'Home',
-    icon: 'eva:home-fill',
-  },
-  {
-    label: 'Profile',
-    icon: 'eva:person-fill',
-  },
-  {
-    label: 'Settings',
-    icon: 'eva:settings-2-fill',
-  },
-];
-
 // ----------------------------------------------------------------------
 
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
   const { userData } = useContext(AppContext)
+  const MENU_OPTIONS = [
+    {
+      label: 'Home',
+      icon: 'eva:home-fill',
+      link: '/dashboard/app'
+    },
+    {
+      label: 'Alterar Senha',
+      icon: 'eva:person-fill',
+      link: `/dashboard/conta/editar/senha/${userData.data.id}`
+    }
+  ];
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
@@ -96,7 +93,7 @@ export default function AccountPopover() {
 
         <Stack sx={{ p: 1 }}>
           {MENU_OPTIONS.map((option) => (
-            <MenuItem key={option.label}>
+            <MenuItem key={option.label} onClick={() => { navigate(option.link) }}>
               {option.label}
             </MenuItem>
           ))}

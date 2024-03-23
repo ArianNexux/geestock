@@ -51,15 +51,17 @@ export default function FormCategory() {
 
     const { userData } = useContext(AppContext)
 
-
+    const [isActive, setIsActive] = useState(true)
     useEffect(() => {
         const getData = async () => {
             const url = `/category/${id}`
             const response = await api.get(url)
             setValue("name", response.data.name)
             setValue("code", response.data.code)
+            setIsActive(response.data.isActive)
         }
-        getData()
+        if (id !== undefined)
+            getData()
     }, [])
     const onSubmit = async (data) => {
 
@@ -117,7 +119,7 @@ export default function FormCategory() {
 
                 </Stack>
                 <Stack>
-                    <Typography variant="body2" gutterBottom>Cadastrar Peças</Typography>
+                    <Typography variant="body2" gutterBottom>Cadastrar Categorias</Typography>
                 </Stack>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <Container sx={{ display: "flex", flexDirection: "column", alignContent: "space-between", backgroundColor: "white", width: "100%", padding: "40px" }}>
@@ -129,7 +131,7 @@ export default function FormCategory() {
                                 isDisabled={false}
                                 register={register}
                                 type="text"
-                                placeholder="Insira o nome do utilzador aqui"
+                                placeholder="Insira o nome da categoria aqui"
                             />
                         </Box>
                         <Box mb={5}>
@@ -144,7 +146,7 @@ export default function FormCategory() {
                             />
                         </Box>
                         <Box mt={5}>
-                            <Button sx={{ maxWidth: "40%", height: "40px" }} type="submit" mb={5} variant="contained">
+                            <Button disabled={!isActive} sx={{ maxWidth: "40%", height: "40px" }} type="submit" mb={5} variant="contained">
                                 Cadastrar
                             </Button>
                         </Box >

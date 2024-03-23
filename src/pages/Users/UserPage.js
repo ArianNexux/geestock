@@ -91,15 +91,17 @@ export default function UserPage() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [status, setStatus] = useState(false);
   const [actualId, setActualId] = useState(0);
   const usersTypes = [
     { label: "Administrador", value: "1" },
     { label: "Gestor de Armazem", value: "2" },
     { label: "Funcionário", value: "3" },
   ]
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event, id, status) => {
     console.log(id)
     setActualId(id);
+    setStatus(status);
     setOpen(event.currentTarget);
   };
 
@@ -197,6 +199,20 @@ export default function UserPage() {
       console.log(e)
     }
   }
+
+  const handleChangeStatus = async (e) => {
+    try {
+
+      const url = `users/change-status/${actualId}?status=${status ? 0 : 1}`;
+      await api.get(url)
+      const response = await api.get('/users')
+      setData(response.data)
+
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
   return (
     <>
       <Helmet>
@@ -239,9 +255,9 @@ export default function UserPage() {
                 />
                 <TableBody>
                   {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, position, company, email } = row;
+                    const { id, name, position, company, email, isActive } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
-
+                    console.log("IS ACTIVO:", isActive)
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
 
@@ -260,15 +276,15 @@ export default function UserPage() {
                         <TableCell align="left">{email}</TableCell>
 
 
-                        <TableCell align="left">{usersTypes[position - 1 ?? 0]?.label}</TableCell>
+                        <TableCell align="left">{usersTypes[position - 1 ?? 0]?.label}{isActive}</TableCell>
 
 
                         <TableCell align="left">
-                          <Label color={(true === 'Inactivo' && 'error') || 'success'}>{sentenceCase('Activo')}</Label>
+                          <Label color={isActive ? 'success' : 'error'}>{isActive ? 'Activo' : 'Inactivo'}</Label>
                         </TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, isActive) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -344,9 +360,9 @@ export default function UserPage() {
           Editar
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
+        <MenuItem onClick={() => { handleChangeStatus() }} >
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Desativar
+          {!status ? 'Activar' : 'Desactivar'}
         </MenuItem>
       </Popover>
     </>

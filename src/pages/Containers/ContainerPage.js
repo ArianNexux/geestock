@@ -43,6 +43,7 @@ const TABLE_HEAD = [
   { id: 'type', label: 'Tipo', alignRight: false },
   { id: 'code', label: 'Codigo', alignRight: false },
   { id: "description", label: "Descrição", alignRight: false },
+  { id: "status", label: "Estado", alignRight: false },
   { id: "Ação", label: "Ação", alignRight: false },
 ];
 
@@ -95,9 +96,10 @@ export default function ContainerPage() {
   const [actualId, setActualId] = useState(0);
   const { userData } = useContext(AppContext)
 
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event, id, isActive) => {
     setActualId(id)
     setOpen(event.currentTarget);
+    setStatus(isActive)
   };
 
   const handleCloseMenu = () => {
@@ -151,6 +153,7 @@ export default function ContainerPage() {
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
   const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
+  const [status, setStatus] = useState(false);
 
   const isNotFound = !filteredUsers.length && !!filterName;
 
@@ -188,6 +191,21 @@ export default function ContainerPage() {
       const response = await api.get(url)
       setData(response.data)
       console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const handleChangeStatus = async (e) => {
+    try {
+
+      const url = `warehouse/change-status/${actualId}?status=${status ? 0 : 1}`;
+      await api.get(url)
+      const response = await api.get('/warehouse')
+      setData(response.data)
+
+      setOpen(false);
 
     } catch (e) {
       console.log(e)
@@ -235,7 +253,7 @@ export default function ContainerPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, description, code, type } = row;
+                    const { id, name, description, code, type, isActive } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -255,9 +273,11 @@ export default function ContainerPage() {
                         <TableCell align="left">{code}</TableCell>
                         <TableCell align="left">{description}</TableCell>
 
-
+                        <TableCell align="left">
+                          <Label color={isActive ? 'success' : 'error'}>{isActive ? 'Activo' : 'Inactivo'}</Label>
+                        </TableCell>
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, isActive) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -332,9 +352,9 @@ export default function ContainerPage() {
             Editar
           </MenuItem>
 
-          <MenuItem sx={{ color: 'error.main' }}>
+          <MenuItem onClick={() => { handleChangeStatus() }} >
             <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-            Eliminar
+            {!status ? 'Activar' : 'Desactivar'}
           </MenuItem>
         </Popover>
       </Container >

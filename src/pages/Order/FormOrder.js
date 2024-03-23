@@ -46,13 +46,16 @@ import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 const TABLE_HEAD = [
     { id: 'name', label: 'Nome', alignRight: false },
     { id: 'partNumber', label: 'PN', alignRight: false },
+    { id: 'warehouse', label: 'Armazem', alignRight: false },
     { id: 'quantity', label: 'Quantidade em stock', alignRight: false },
     { id: 'quantityRequested', label: 'Quantidade Requerida', alignRight: false },
+
 ];
 
 const TABLE_HEAD_UPDATE = [
     { id: 'name', label: 'Nome', alignRight: false },
     { id: 'partNumber', label: 'PN', alignRight: false },
+    { id: 'warehouse', label: 'Armazem', alignRight: false },
     { id: 'quantityRequested', label: 'Quantidade Requerida', alignRight: false },
 ];
 // ----------------------------------------------------------------------
@@ -125,6 +128,7 @@ export default function FormOrder() {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
     const [Open, setOpen] = useState(false)
+
     const handleCloseMenu = () => {
         setOpen(null);
     };
@@ -214,7 +218,8 @@ export default function FormOrder() {
                     name: e.piece.name,
                     partNumber: e.piece.partNumber,
                     description: e.piece.description,
-                    price: Number(e.piece.price)
+                    price: Number(e.piece.price),
+                    warehouse: e.piece.warehouse
                 })))
         }
         if (id !== undefined)
@@ -366,7 +371,7 @@ export default function FormOrder() {
                                         />
                                         <TableBody>
                                             {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                                const { id, name, description, quantity, partNumber } = row;
+                                                const { id, name, description, quantity, partNumber, warehouse: { name: warehouseName } } = row;
                                                 const selectedUser = selected.findIndex(obj => obj.id === id) !== -1;
 
                                                 return (
@@ -383,6 +388,7 @@ export default function FormOrder() {
                                                                 </Typography>
                                                             </TableCell>
                                                             <TableCell align="left">{partNumber}</TableCell>
+                                                            <TableCell align="left">{warehouseName}</TableCell>
 
 
 
@@ -458,9 +464,9 @@ export default function FormOrder() {
                         </Card>
 
                         <Box mt={5}>
-                            <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
-                                Cadastrar
-                            </Button>
+                            {!isFinished && <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
+                                {id !== undefined ? 'Actualizar' : 'Cadastrar'}
+                            </Button>}
                         </Box >
                     </form>
                 </Container >

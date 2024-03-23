@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState, useContext, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
@@ -37,6 +38,7 @@ const styleChildBox = {
 
 const buttonStyle = {
     backgroundColor: 'primary',
+    marginRight: '10px',
 };
 export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
     const {
@@ -59,13 +61,25 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
     const navigate = useNavigate()
     const quantity = watch("quantity")
     const price = watch("price")
-    const [rows, setRows] = useState([{}])
+    const [rows, setRows] = useState([{
+        quantityGiven: []
+    }])
     const [numberSeries, setNumberSeries] = useState("0")
 
     const { userData } = useContext(AppContext)
 
     const handleAcceptRequest = async () => {
-        console.log(rows)
+
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].quantity < rows[i]?.quantityGiven[rows[i]?.quantityGiven?.length - 1] || rows[i]?.quantityGiven?.length <= 0) {
+                addToast({
+                    title: `A quantidade fornecida é obrigatória e não pode ser  maior que a quantidade requisitada para a peça "${rows[i].piece.label}"`,
+                    status: "warning"
+                })
+                return;
+            }
+        }
+
         const requestData = rows.map(row => ({
             number_series: row.numberSeries,
             pieceId: row.piece.value,
@@ -86,6 +100,8 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
             setIsOpen(false)
 
         }
+
+        window.location.reload()
 
     }
 
@@ -112,25 +128,7 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
         }
         getData()
     }, [id])
-    const handleOnClick = async () => {
-        try {
 
-            const response = await api.get(`/order/confirm-order/${id}`)
-
-            if (response.status === 200 || response.status === 201) {
-                addToast({
-                    title: "Encomenda cadastrada com sucesso",
-                    status: "success"
-                })
-                navigate("/dashboard/encomenda")
-            }
-            setIsOpen(false)
-        } catch (e) {
-            console.log(e)
-        }
-
-
-    }
     const handleOpen = () => setIsOpen(true);
     const handleClose = () => setIsOpen(false);
     return (
@@ -159,6 +157,9 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
                     <Box>
                         <Button onClick={handleAcceptRequest} variant="contained" sx={buttonStyle}>
                             Confirmar
+                        </Button>
+                        <Button onClick={handleClose} variant="contained" sx={buttonStyle}>
+                            Voltar
                         </Button>
                     </Box>
                 </Box>

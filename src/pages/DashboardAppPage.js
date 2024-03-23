@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 import { useNavigate } from 'react-router-dom';
 import { filter } from 'lodash';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod";
 // @mui
 import { useTheme } from '@mui/material/styles';
 // components
@@ -28,13 +30,17 @@ import {
   Select,
   IconButton,
   TableContainer,
+  Box,
   TablePagination,
   TextField
 } from '@mui/material';
+import CustomFormControlSelect from '../components/CustomFormControlSelect';
 import api from '../utils/api'
 import Scrollbar from '../components/scrollbar';
 import SvgColor from '../components/svg-color';
 import Iconify from '../components/iconify';
+
+import { DashboardSchema } from './schemaDashboard.ts';
 
 import {
   AppTasks,
@@ -101,7 +107,7 @@ function applySortFilter(array, comparator, query) {
 export default function DashboardAppPage() {
   const theme = useTheme();
   const iconPng = (name) => <SvgColor src={`/assets/icons/navbar/${name}.png`} sx={{ width: 1, height: 1 }} />;
-  const { userData } = useContext(AppContext)
+  const { userData, setCurentWarehouse } = useContext(AppContext)
   const [dashboard, setDashboard] = useState({})
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
@@ -126,10 +132,23 @@ export default function DashboardAppPage() {
     setActualId(id)
 
   };
-
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    control,
+    watch,
+    setError,
+    getValues,
+    setValue,
+    clearErrors,
+  } = useForm({
+    resolver: zodResolver(DashboardSchema),
+  });
   const handleCloseMenu = () => {
     setOpen(null);
   };
+  const warehouseId = watch("search")
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -189,7 +208,7 @@ export default function DashboardAppPage() {
       try {
         const url = filter !== "Todos" ? `/piece/warehouse/${filter}` : `/piece`;
         const response = await api.get(url)
-        const responseWarehouse = await api.get("/warehouse")
+        const responseWarehouse = await api.get("/warehouse?onlyActive=1")
         setData(response.data)
         setDataWarehouse(responseWarehouse.data)
         console.log("WAREHOUSE DATA", response.data)
@@ -213,9 +232,10 @@ export default function DashboardAppPage() {
     }
   }
   const handleChange = async (e) => {
-    setFilter(e.target.value)
+    console.log("CONSOLE LOG", warehouseId.value)
+    setFilter(warehouseId.value)
     try {
-      const url = e.target.value !== "Todos" ? `/piece/warehouse/${e.target.value}` : `/piece?searchParam=${search}`
+      const url = warehouseId.value !== "Todos" ? `/piece/warehouse/${warehouseId.value}` : `/piece?searchParam=${search}`
       const response = await api.get(url)
       setData(response.data)
     } catch (e) {
@@ -236,6 +256,11 @@ export default function DashboardAppPage() {
     }
     getData()
   }, [search])
+
+  useEffect(() => {
+    console.log("Ola mundo como assim??")
+    handleChange()
+  }, [warehouseId])
   console.log("Vendo o user data aqui:", userData)
   return (
     <>
@@ -250,41 +275,46 @@ export default function DashboardAppPage() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Requisições" total={dashboard?.request} icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="Requisições" total={dashboard.request} icon={'ant-design:apple-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Armazéns" total={dashboard?.warehouse} color="info" icon={'ant-design:apple-filled'} />
+            <AppWidgetSummary title="Armazéns" total={dashboard.warehouse} color="info" icon={'ant-design:apple-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Encomendas" total={dashboard?.order} color="warning" icon={'ant-design:windows-filled'} />
+            <AppWidgetSummary title="Encomendas" total={dashboard.order} color="warning" icon={'ant-design:windows-filled'} />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Peças" total={dashboard?.piece} color="error" icon={'ant-design:bug-filled'} />
+            <AppWidgetSummary title="Peças" total={dashboard.piece} color="error" icon={'ant-design:bug-filled'} />
           </Grid>
 
           <Grid item xs={12} md={6} lg={12}>
             <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "10px" }} >
-              <FormControl variant="standard" sx={{ m: 1, minWidth: '40%', marginRight: '50px' }}>
-                <InputLabel id="demo-simple-select-standard-label">Armazém</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={filter}
-                  label="Armazém"
-                  onChange={(e) => handleChange(e)}
-                >
-                  <MenuItem value={'Todos'}>Todos</MenuItem>
-                  {
-                    warehouseData.length > 0 && warehouseData.map(e => (
-                      <MenuItem value={e.id}>{e.name}</MenuItem>
+              <Box sx={{ m: 1, minWidth: '50%', marginRight: '50px' }}>
 
-                    ))
+                <CustomFormControlSelect
+
+                  errors={errors}
+                  control={control}
+                  label="Armazém"
+                  isDisabled={false}
+                  fieldNameObject="search"
+                  fieldName="Armazém"
+                  isMulti={false}
+                  parent={{ value: 1 }}
+                  options={
+                    [
+                      { label: 'Todos', value: 'Todos' },
+                      ...warehouseData.map(e => ({
+                        label: e.name,
+                        value: e.id
+                      }))]
                   }
-                </Select>
-              </FormControl>
+                  isSearchable
+                />
+              </Box>
               <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo Part Number ou Nome da Peça" type="email" sx={{ minWidth: "40%" }} />
               <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
                 Pesquisar

@@ -35,7 +35,7 @@ import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 import USERLIST from '../../_mock/user';
 import api from '../../utils/api';
 import { AppContext } from '../../context/context';
-
+import MyRequestNote from '../../components/InvoiceReciepment/request-note'
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -92,7 +92,12 @@ export default function RequestsPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [actualId, setActualId] = useState(0);
-
+  const handleOpenDocument = async () => {
+    const url = `/request/${actualId}`
+    const response = await api.get(url)
+    console.log(response.data)
+    MyRequestNote(response.data)
+  }
   const handleOpenMenu = (event, id) => {
     setActualId(id)
     setOpen(event.currentTarget);
@@ -117,15 +122,15 @@ export default function RequestsPage() {
     setSelected([]);
   };
   const [data, setData] = useState([])
-  const { userData } = useContext(AppContext)
+  const { userData, curentWarehouse } = useContext(AppContext)
 
   useEffect(() => {
+    console.log("WAREHOUSE", curentWarehouse)
     const getData = async () => {
       try {
-        const url = userData.data.position === "1" ? `/request` : `/request/warehouseoutcomming/${userData.data.warehouse.id}`;
+        const url = Number(userData.data.position) <= 1 ? `/request?onlyActive=1` : `/request/warehouseoutcomming/${curentWarehouse}?onlyActive=1`;
         const response = await api.get(url)
         setData(response.data)
-        console.log("LOGAR", response.data)
       } catch (e) {
         console.log(e)
       }
@@ -171,7 +176,7 @@ export default function RequestsPage() {
     const getData = async () => {
       try {
         if (search.length <= 1) {
-          const url = userData.data.position === "1" ? `/request/?searchParam=${search}` : `/request/warehouseoutcomming/${userData.data.warehouse.id}`;;
+          const url = Number(userData.data.position) <= 1 ? `/request/?searchParam=${search}&onlyActive=1` : `/request/warehouseoutcomming/${curentWarehouse}?onlyActive=1`;;
           const response = await api.get(url)
           setData(response.data)
         }
@@ -180,11 +185,11 @@ export default function RequestsPage() {
       }
     }
     getData()
-  }, [search])
+  }, [search, curentWarehouse])
   const handleSearch = async () => {
     try {
 
-      const url = userData.data.position === "1" ? `/request/?searchParam=${search}` : `/request/warehouseoutcomming?searchParam=${search}`;
+      const url = userData.data.position === "1" ? `/request/?searchParam=${search}&onlyActive=1` : `/request/warehouseoutcomming?searchParam=${search}&onlyActive=1`;
       const response = await api.get(url)
       setData(response.data)
       console.log(response.data)
@@ -259,7 +264,7 @@ export default function RequestsPage() {
 
 
                         <TableCell align="left">
-                          <Label color={(state === 'Em Curso' && 'error') || 'success'}>{sentenceCase(state)}</Label>
+                          <Label >{sentenceCase(state)}</Label>
                         </TableCell>
 
                         <TableCell align="right">
@@ -338,7 +343,10 @@ export default function RequestsPage() {
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Ver mais
         </MenuItem>
-
+        <MenuItem onClick={() => { handleOpenDocument() }}>
+          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+          Imprimir
+        </MenuItem>
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Cancelar

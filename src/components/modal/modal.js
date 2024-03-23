@@ -83,13 +83,39 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
         }
         getData()
     }, [id])
+    const [selected, setSelected] = useState([]);
+
+    const handleClick = (event, name) => {
+        const selectedIndex = selected.indexOf(name);
+        let newSelected = [];
+        if (selectedIndex === -1) {
+            newSelected = newSelected.concat(selected, name);
+        } else if (selectedIndex === 0) {
+            newSelected = newSelected.concat(selected.slice(1));
+        } else if (selectedIndex === selected.length - 1) {
+            newSelected = newSelected.concat(selected.slice(0, -1));
+        } else if (selectedIndex > 0) {
+            newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+        }
+        setSelected(newSelected);
+    };
     const handleOnClick = async () => {
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].quantity < rows[i]?.quantityGiven[rows[i]?.quantityGiven?.length - 1] || rows[i]?.quantityGiven?.length <= 0) {
+                addToast({
+                    title: `A quantidade recebida é obrigatória e não pode ser  maior que a quantidade requisitada para a peça "${rows[i].piece.label}"`,
+                    status: "warning"
+                })
+                return;
+            }
+        }
         try {
             console.log(rows)
 
             const pieceData = rows.map(row => ({
                 pieceId: row.piece.value,
-                quantity: row.quantityGiven[row.quantityGiven.length - 1]
+                quantity: row.quantityGiven[row.quantityGiven.length - 1],
+                locationInWarehouse: row.locationInWarehouse[row.locationInWarehouse.length - 1]
             }))
 
             console.log(pieceData)

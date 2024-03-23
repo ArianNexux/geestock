@@ -47,6 +47,7 @@ export default function FormSubcategory() {
     const category = watch("category")
     const [categoryData, setCategoryData] = useState([])
     const { userData } = useContext(AppContext)
+    const [isActive, setIsActive] = useState(true)
 
     const { addToast } = Toast()
     const navigate = useNavigate()
@@ -57,7 +58,9 @@ export default function FormSubcategory() {
             console.log("FINAL RESPONSE", response.data)
             setValue("name", response.data.name)
             setValue("code", response.data.code)
-            setValue("category", response.data.category.id)
+            setValue("category", { value: response.data.category.id, label: response.data.category.name })
+            setIsActive(response.data.isActive)
+
         }
 
         getData()
@@ -83,7 +86,7 @@ export default function FormSubcategory() {
 
                 })
             }
-            if (response.status === 201) {
+            if (response.status === 201 || response.status === 200) {
                 addToast({
                     title: "Subcategoria cadastrada com sucesso",
                     status: "success"
@@ -166,8 +169,9 @@ export default function FormSubcategory() {
                             />
                         </Box>
                         <Box mt={5}>
-                            <Button sx={{ maxWidth: "40%", height: "40px" }} mb={5} type="submit" variant="contained">
-                                Cadastrar
+                            <Button disabled={!isActive} sx={{ maxWidth: "40%", height: "40px" }} mb={5} type="submit" variant="contained">
+                                {id !== undefined ? 'Actualizar' : 'Cadastrar'}
+
                             </Button>
                         </Box >
                     </Container >

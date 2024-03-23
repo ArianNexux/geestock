@@ -1,3 +1,4 @@
+/** eslint-disable */
 import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box'
 import Table from '@mui/material/Table';
@@ -13,11 +14,37 @@ import Checkbox from '@mui/material/Checkbox';
 import ModalNumberSeries from '../modal/modalNumberSeries'
 
 export default function TableRequestForMe({ rows, hasPrice = false, showInput = false, errors, register, partNumber, setPartNumber, setNumberSeries }) {
+    const [selectedRow, setSelectedRow] = useState({})
+    const [isOpenModalNumber, setIsOpenModalNumber] = useState(false)
+
     useEffect(() => {
         console.log(rows)
     }, [])
-    const [selectedRow, setSelectedRow] = useState({})
-    const [isOpenModalNumber, setIsOpenModalNumber] = useState(false)
+
+    const handleOpenNumberSeries = (row, i) => {
+        setIsOpenModalNumber(true);
+
+        let newNumberSeries
+        const rowQuantity = Number(rows[i].quantityGiven)
+
+        if ((rowQuantity !== rows[i].numberSeries.length && rowQuantity > 0)) {
+            newNumberSeries = rows[i].numberSeries.slice(0, rowQuantity)
+
+
+            rows[i].numberSeries = newNumberSeries
+
+            setSelectedRow({
+                ...rows[i],
+                quantityGiven: rows[i].quantityGiven,
+                numberSeries: rows[i].numberSeries
+            })
+        }
+    }
+
+    const handleSetQuantity = (e, row) => {
+        row.quantityGiven = e.target.value;
+    }
+
     return (
         <TableContainer component={Paper}>
             <Table sx={{ width: '300' }} aria-label="simple table">
@@ -40,7 +67,7 @@ export default function TableRequestForMe({ rows, hasPrice = false, showInput = 
                 </TableHead>
                 <TableBody>
 
-                    {rows.map((row) => (
+                    {rows.map((row, i) => (
 
                         <TableRow
                             key={row.piece.value}
@@ -59,26 +86,24 @@ export default function TableRequestForMe({ rows, hasPrice = false, showInput = 
                                     <Input
                                         placeholder={"Insira a quantidade number"}
                                         type="number"
+                                        max={2}
                                         minRows={0}
                                         maxRows={row.quantity}
                                         onBlur={(e) => {
-                                            row.quantityGiven = []
-                                            row.quantityGiven.push(e.target.value);
+                                            handleSetQuantity(e, row)
                                         }}
                                         sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
                                     />
-
                                 </Box>
                             </TableCell>
 
                             <TableCell>
                                 <Box ml={10}>
                                     <Button
-                                        disabled={row.quantity <= 1}
                                         variant="outlined"
                                         onClick={() => {
-                                            setSelectedRow(row)
-                                            setIsOpenModalNumber(true);
+                                            setSelectedRow(row);
+                                            handleOpenNumberSeries(row, i)
                                         }}
                                     >
                                         Nº de Série
@@ -88,7 +113,7 @@ export default function TableRequestForMe({ rows, hasPrice = false, showInput = 
                         </TableRow>
                     ))}
                     <ModalNumberSeries
-                        quantity={selectedRow.quantity}
+                        quantity={selectedRow.quantityGiven}
                         isOpen={isOpenModalNumber}
                         setIsOpen={setIsOpenModalNumber}
                         numberSeries={selectedRow.numberSeries}

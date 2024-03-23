@@ -25,12 +25,12 @@ import Iconify from '../../components/iconify';
 import { UserSchema } from './schema.ts';
 import api from '../../utils/api'
 import { Toast } from '../../components/Toast';
-import { GET_CATEGORY, GET_SUBCATEGORY, GET_SUPPLIER, GET_TRANSPORT } from '../../utils/endpoints';
+import { GET_CATEGORY, GET_SUBCATEGORY, GET_SUPPLIER, GET_TRANSPORT, GET_WAREHOUSE } from '../../utils/endpoints';
 import { AppContext } from '../../context/context';
 
 
 export default function FormPieces() {
-    const { userData } = useContext(AppContext)
+    const { userData, curentWarehouse } = useContext(AppContext)
 
     const navigate = useNavigate()
     const {
@@ -48,6 +48,7 @@ export default function FormPieces() {
     });
     const { addToast } = Toast()
 
+    const warehouseId = watch("warehouseId")
     const transportId = watch("transportId")
     const categoryId = watch("categoryId")
     const supplierId = watch("supplierId")
@@ -57,6 +58,8 @@ export default function FormPieces() {
     const [subCategoryData, setSubCategoryData] = useState([])
     const [transportData, setTransportData] = useState([])
     const [supplierData, setSupplierData] = useState([])
+    const [warehouseData, setWarehouseData] = useState([])
+    const [isActive, setIsActive] = useState(true)
     const { id } = useParams()
 
     useEffect(() => {
@@ -66,7 +69,11 @@ export default function FormPieces() {
             const responseSubcategories = await api.get(GET_SUBCATEGORY)
             const responseTransports = await api.get(GET_TRANSPORT)
             const responseSuppliers = await api.get(GET_SUPPLIER)
-
+            const responseWarehouse = await api.get(`${GET_WAREHOUSE}?onlyActive=1`)
+            setWarehouseData(responseWarehouse.data.map(e => ({
+                value: e.id,
+                label: e.name
+            })))
             setCategoryData(responseCategories.data.map(e => ({
                 value: e.id,
                 label: e.name
@@ -83,6 +90,13 @@ export default function FormPieces() {
                 value: e.id,
                 label: e.name
             })))
+
+            if (Number(userData.data.position) > 1) {
+                const foundWarehouse = userData.data.warehouse.filter(warehouse => warehouse.id === curentWarehouse)
+                console.log("WAREHOUSE ACTUAL", foundWarehouse, curentWarehouse, userData.data.warehouse)
+                setValue("warehouseId", { label: foundWarehouse[0].name, value: foundWarehouse[0].id })
+
+            }
         }
         const fullFillFormData = async (data) => {
             const url = `/piece/${id}`
@@ -96,10 +110,12 @@ export default function FormPieces() {
             setValue("brand_name", response.data.brand_name)
             setValue("supplierId", { value: response.data.supplier.id, label: response.data.supplier.name })
             setValue("categoryId", { value: response.data.category.id, label: response.data.category.name })
+            setValue("warehouseId", { value: response.data?.warehouse.id, label: response.data?.warehouse.name })
             setValue("subCategoryId", { value: response.data.subcategory.id, label: response.data.subcategory.name })
             setValue("quantity", response.data.quantity.toString())
             setValue("target", response.data.target.toString())
             setValue("min", response.data.min.toString())
+            setIsActive(response.data.isActive)
         }
 
         fullFillFormData()
@@ -122,11 +138,11 @@ export default function FormPieces() {
                 quantity: Number(data.quantity),
                 target: Number(data.target),
                 min: Number(data.min),
-                warehouseId: userData.data.warehouse?.id,
+                warehouseId: warehouseId.value,
                 supplierId: supplierId.value,
                 categoryId: categoryId.value,
                 subCategoryId: subCategoryId.value,
-                state: state.value,
+                state: 'Disponivel',
                 userId: userData.data.id,
             }
 
@@ -209,9 +225,22 @@ export default function FormPieces() {
                                 fieldNameObject="partNumber"
                                 isDisabled={false}
                                 register={register}
-                                isRequired={false}
+                                isRequired
                                 type="text"
                                 placeholder="Insira o Part Number"
+                            />
+                        </Box>
+                        <Box mb={5}>
+                            <CustomFormControlSelect
+                                errors={errors}
+                                fieldName="Armazém"
+                                fieldNameObject="warehouseId"
+                                isDisabled={Number(userData.data.position) > 1}
+                                parent={{ value: 1 }}
+                                options={warehouseData}
+                                control={control}
+                                isMulti={false}
+                                isRequired
                             />
                         </Box>
                         <Box mb={5}>
@@ -232,7 +261,7 @@ export default function FormPieces() {
                                 fieldNameObject="price"
                                 isDisabled={id !== undefined}
                                 register={register}
-                                isRequired={false}
+                                isRequired
                                 type="number"
                                 placeholder="Insira o preço aqui"
                             />
@@ -292,18 +321,7 @@ export default function FormPieces() {
                             />
                         </Box>
 
-                        <Box mb={5}>
-                            <CustomFormControlSelect
-                                errors={errors}
-                                fieldNameObject="state"
-                                isDisabled={false}
-                                parent={{ value: 1 }}
-                                options={[{ value: "Disponivel", label: "Disponível" }, { value: "Removido", label: "Removido" }]}
-                                fieldName="Estado"
-                                control={control}
-                                isMulti={false}
-                            />
-                        </Box>
+
                         <Box mb={5}>
                             <CustomFormControlInput
                                 errors={errors}
@@ -343,8 +361,8 @@ export default function FormPieces() {
 
 
                         <Box mt={5}>
-                            <Button type="submit" onClick={() => { console.log(errors) }} sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
-                                Cadastrar
+                            <Button disabled={!isActive} type="submit" onClick={() => { console.log(errors) }} sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
+                                {id !== undefined ? 'Actualizar' : 'Cadastrar'}
                             </Button>
                         </Box >
                     </form>

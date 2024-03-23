@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import {
@@ -25,6 +25,7 @@ import {
   TextField
 } from '@mui/material';
 // components
+import { AppContext } from '../../context/context';
 import Label from '../../components/label/Label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
@@ -40,6 +41,7 @@ import { GET_CATEGORY } from '../../utils/endpoints';
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome', alignRight: false },
   { id: 'company', label: 'Código', alignRight: false },
+  { id: 'status', label: 'Estado', alignRight: false },
 
   { id: '' },
 ];
@@ -79,7 +81,7 @@ export default function CategoryPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
-
+  const { userData } = useContext(AppContext)
   const [order, setOrder] = useState('asc');
 
   const [selected, setSelected] = useState([]);
@@ -89,9 +91,11 @@ export default function CategoryPage() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [status, setStatus] = useState(false);
 
   const [data, setData] = useState([])
   const [actualId, setActualId] = useState(0);
+
 
   useEffect(() => {
 
@@ -101,9 +105,9 @@ export default function CategoryPage() {
     }
     getData()
   }, [])
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event, id, isActive) => {
     setActualId(id)
-
+    setStatus(isActive)
     setOpen(event.currentTarget);
   };
 
@@ -165,7 +169,7 @@ export default function CategoryPage() {
     const getData = async () => {
       try {
         if (search.length <= 1) {
-          const url = `/category`;
+          const url = `/category?onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
           const response = await api.get(url)
           setData(response.data)
         }
@@ -178,10 +182,24 @@ export default function CategoryPage() {
   const handleSearch = async () => {
     try {
 
-      const url = `/category?searchParam=${search}`;
+      const url = `/category?searchParam=${search}&onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
       const response = await api.get(url)
       setData(response.data)
       console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  const handleChangeStatus = async (e) => {
+    try {
+
+      const url = `category/change-status/${actualId}?status=${status ? 0 : 1}`;
+      await api.get(url)
+      const response = await api.get('/category')
+      setData(response.data)
+
+      setOpen(false);
 
     } catch (e) {
       console.log(e)
@@ -207,7 +225,7 @@ export default function CategoryPage() {
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
-          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo Part Number ou Nome da Peça" type="email" sx={{ minWidth: "50%" }} />
+          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo nome ou codigo da categoria" type="email" sx={{ minWidth: "50%" }} />
           <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
           </Button>
@@ -229,7 +247,7 @@ export default function CategoryPage() {
                 />
                 <TableBody>
                   {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, code } = row;
+                    const { id, name, code, isActive } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -246,9 +264,11 @@ export default function CategoryPage() {
 
                         <TableCell align="left">{code}</TableCell>
 
-
+                        <TableCell align="left">
+                          <Label color={isActive ? 'success' : 'error'}>{isActive ? 'Activo' : 'Inactivo'}</Label>
+                        </TableCell>
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, isActive) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -323,9 +343,9 @@ export default function CategoryPage() {
             Editar
           </MenuItem>
 
-          <MenuItem sx={{ color: 'error.main' }}>
+          <MenuItem onClick={() => { handleChangeStatus() }} >
             <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-            Eliminar
+            {!status ? 'Activar' : 'Desactivar'}
           </MenuItem>
         </Popover>
       </Container >

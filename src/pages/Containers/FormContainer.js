@@ -1,3 +1,5 @@
+
+/* eslint-disable  */
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
@@ -31,7 +33,7 @@ import { Toast } from '../../components/Toast';
 export default function FormContainer() {
     const navigate = useNavigate()
     const { userData } = useContext(AppContext)
-
+    const [isActive, setIsActive] = useState(false)
     const [schema, setSchema] = useState(WarehouseSchemaFixed)
     const {
         register,
@@ -46,6 +48,8 @@ export default function FormContainer() {
     } = useForm({
         resolver: zodResolver(schema),
     });
+    const { id } = useParams()
+
     const typeWarehouse = watch("type")
     useEffect(() => {
         const getData = async () => {
@@ -65,7 +69,8 @@ export default function FormContainer() {
             console.log(response)
             setValue("type", { label: response.data.type, value: response.data.type })
             setSchema(WarehouseSchemaFixed)
-
+            setIsActive(response.data.isActive != "1")
+            console.log("ID REF", id)
         }
         getData()
 
@@ -75,10 +80,10 @@ export default function FormContainer() {
     }, [typeWarehouse])
 
     const { addToast } = Toast()
-    const { id } = useParams()
 
     const onSubmit = async (data) => {
         console.log("Ola mundo")
+
         try {
 
             let response;
@@ -87,12 +92,14 @@ export default function FormContainer() {
                 response = await api.post(url, {
                     ...data,
                     type: typeWarehouse.value,
-                    userId: userData.data.id
+                    userId: userData.data.id,
+                    capacity: Number(data.capacity)
                 })
             } else {
                 response = await api.patch(url, {
                     ...data,
                     type: typeWarehouse.value,
+                    capacity: Number(data.capacity),
                     id,
                     userId: userData.data.id
 
@@ -263,10 +270,8 @@ export default function FormContainer() {
                             />
                         </Box>
                         <Box mt={5}>
-                            <Button type="submit" onClick={() => {
-                                console.log(errors)
-                            }} sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
-                                Cadastrar
+                            <Button type="submit" disabled={isActive && id !== undefined} sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
+                                {id !== undefined ? 'Actualizar' : 'Cadastrar'}
                             </Button>
                         </Box >
                     </form>

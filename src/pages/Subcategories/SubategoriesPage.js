@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 // @mui
@@ -25,6 +25,7 @@ import {
   TablePagination,
   TextField
 } from '@mui/material';
+import { AppContext } from '../../context/context';
 import api from '../../utils/api';
 import { GET_SUBCATEGORY } from '../../utils/endpoints';
 
@@ -43,6 +44,7 @@ const TABLE_HEAD = [
   { id: 'code', label: 'Código', alignRight: false },
   { id: 'name', label: 'Nome', alignRight: false },
   { id: 'categoryName', label: 'Categoria', alignRight: false },
+  { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
 
@@ -88,11 +90,11 @@ export default function SubcategoryPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [data, setData] = useState([])
   const [actualId, setActualId] = useState("");
-
+  const { userData } = useContext(AppContext)
   useEffect(() => {
 
     const getData = async () => {
-      const responseCategories = await api.get(GET_SUBCATEGORY)
+      const responseCategories = await api.get(`${GET_SUBCATEGORY}?onlyActive=${userData.data.position === "1" ? "0" : "1"}`)
       setData(responseCategories.data)
 
     }
@@ -100,10 +102,11 @@ export default function SubcategoryPage() {
   }, [])
 
 
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event, id, isActive) => {
     console.log(id)
     setOpen(event.currentTarget);
     setActualId(id)
+    setStatus(isActive)
   };
 
   const handleCloseMenu = () => {
@@ -157,6 +160,7 @@ export default function SubcategoryPage() {
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
   const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
+  const [status, setStatus] = useState(false);
 
   const isNotFound = !filteredUsers.length && !!filterName;
   const [search, setSearch] = useState("")
@@ -164,7 +168,7 @@ export default function SubcategoryPage() {
     const getData = async () => {
       try {
         if (search.length <= 1) {
-          const url = `/subcategory`;
+          const url = `/subcategory?onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
           const response = await api.get(url)
           setData(response.data)
         }
@@ -177,7 +181,7 @@ export default function SubcategoryPage() {
   const handleSearch = async () => {
     try {
 
-      const url = `/subcategory?searchParam=${search}`;
+      const url = `/subcategory?searchParam=${search}&onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
       const response = await api.get(url)
       setData(response.data)
       console.log(response.data)
@@ -186,6 +190,22 @@ export default function SubcategoryPage() {
       console.log(e)
     }
   }
+
+  const handleChangeStatus = async (e) => {
+    try {
+
+      const url = `subcategory/change-status/${actualId}?status=${status ? 0 : 1}`;
+      await api.get(url)
+      const response = await api.get('/subcategory')
+      setData(response.data)
+
+      setOpen(false);
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   return (
     <>
       <Helmet>
@@ -228,8 +248,7 @@ export default function SubcategoryPage() {
                 />
                 <TableBody>
                   {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, code, category: { name: categoryName } } = row;
-                    console.log("NEW", categoryName)
+                    const { id, name, code, category: { name: categoryName }, isActive } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -242,9 +261,11 @@ export default function SubcategoryPage() {
                         </TableCell>
 
                         <TableCell align="left">{categoryName}</TableCell>
-
                         <TableCell align="left">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
+                          <Label color={isActive ? 'success' : 'error'}>{isActive ? 'Activo' : 'Inactivo'}</Label>
+                        </TableCell>
+                        <TableCell align="left">
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, isActive) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -321,9 +342,9 @@ export default function SubcategoryPage() {
             Editar
           </MenuItem>
 
-          <MenuItem sx={{ color: 'error.main' }}>
+          <MenuItem onClick={() => { handleChangeStatus() }} >
             <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-            Eliminar
+            {!status ? 'Activar' : 'Desactivar'}
           </MenuItem>
         </Popover>
       </Container >

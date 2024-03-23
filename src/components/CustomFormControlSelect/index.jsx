@@ -14,7 +14,8 @@ export default function CustomFormControlSelect({
     isRequired=true,
     parent={ },
     defaultValue = false,   
-    isMulti=true
+    isMulti=true,
+    isSearchable= false
 }){
     return (
         <FormControl isInvalid={!!errors[fieldNameObject]}>
@@ -30,7 +31,7 @@ export default function CustomFormControlSelect({
                             id={fieldNameObject}
                             value = {value || ""}
                             options={options}      
-                            isSearchable={false}
+                            isSearchable={isSearchable}
                             isDisabled={isDisabled || !parent?.value}
                             onChange={(e)=>{
                                 onChange(e)
@@ -41,7 +42,7 @@ export default function CustomFormControlSelect({
                     />
               
         <FormErrorMessage>
-            {errors[fieldNameObject] && <>{REQUIRED_FIELD}</>}
+          {errors[fieldNameObject] && <>{REQUIRED_FIELD}</>}
         </FormErrorMessage>
             </FormControl>
     )

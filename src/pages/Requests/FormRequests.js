@@ -191,13 +191,13 @@ export default function FormRequests() {
     useEffect(() => {
         const getData = async () => {
             try {
-                const url = `/warehouse`;
+                const url = `/warehouse?onlyActive=1`;
                 const response = await api.get(url)
                 setData(response.data.map(e => ({
                     value: e.id,
                     label: e.name
                 })))
-                const urlPieces = `/piece/warehouse/${response.data[0].id}`;
+                const urlPieces = `/piece/warehouse/${response.data[0].id}?onlyActive=1`;
                 const responsePieces = await api.get(urlPieces)
                 setDataPieces([...responsePieces.data])
                 console.log("LOGAR", response.data)
@@ -211,7 +211,7 @@ export default function FormRequests() {
     useEffect(() => {
         const getData = async () => {
             try {
-                const urlPieces = `/piece/warehouse/${warehouse.value}`;
+                const urlPieces = `/piece/warehouse/${warehouse.value}?onlyActive=1`;
                 const responsePieces = await api.get(urlPieces)
                 setDataPieces([...responsePieces.data])
             } catch (e) {
@@ -255,7 +255,7 @@ export default function FormRequests() {
     const handleSearch = async () => {
         try {
 
-            const url = `/request/warehouse/${warehouse.value}?searchParam=${search}`;
+            const url = `/request/warehouse/${warehouse.value}?searchParam=${search}&onlyActive=1`;
             const response = await api.get(url)
             setDataPieces(response.data)
 
@@ -268,7 +268,7 @@ export default function FormRequests() {
         const getData = async () => {
             try {
                 if (search.length <= 1) {
-                    const url = `/request/warehouse/${warehouse.value}`;
+                    const url = `/request/warehouse/${warehouse.value}?onlyActive=1`;
                     const response = await api.get(url)
                     setDataPieces(response.data)
                 }
@@ -282,6 +282,13 @@ export default function FormRequests() {
     const onSubmit = async (data) => {
         console.log(errors)
         console.log(data)
+        if (warehouseDestiny.value === warehouse.value) {
+            addToast({
+                title: "O Armazém de destino não pode ser igual ao Armazém de origem!",
+                status: "warning"
+            })
+            return;
+        }
         try {
             const data = {
                 name,
@@ -376,6 +383,7 @@ export default function FormRequests() {
                                 isDisabled={id !== undefined}
                                 parent={{ value: 1 }}
                                 options={data}
+                                isSearchable
                                 control={control}
                                 isMulti={false}
 
@@ -389,6 +397,7 @@ export default function FormRequests() {
                                 isDisabled={id !== undefined}
                                 parent={{ value: 1 }}
                                 options={data}
+                                isSearchable
                                 control={control}
                                 isMulti={false}
 
@@ -423,7 +432,7 @@ export default function FormRequests() {
                                             {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                                                 const { id, name, description, quantity, partNumber } = row;
                                                 const selectedUser = selected.findIndex(obj => obj.id === id) !== -1;
-
+                                                console.log("CONSOLE LOG", row)
                                                 return (
 
                                                     <>
@@ -517,7 +526,7 @@ export default function FormRequests() {
 
                         <Box mt={5}>
                             {!isFinished && <Button sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained" onClick={() => { console.log(errors) }} type="submit">
-                                Cadastrar
+                                {id !== undefined ? 'Actualizar' : 'Cadastrar'}
                             </Button>}
                         </Box >
                     </Container >

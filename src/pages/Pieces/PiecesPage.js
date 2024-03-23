@@ -41,6 +41,7 @@ const TABLE_HEAD = [
   { id: 'partNumber', label: 'PN', alignRight: false },
   { id: 'quantity', label: 'Quantidade', alignRight: false },
   { id: 'price', label: 'Preço', alignRight: false },
+  { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
 
@@ -79,7 +80,7 @@ export default function PiecesPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
-  const { userData } = useContext(AppContext)
+  const { userData, curentWarehouse } = useContext(AppContext)
 
   const [order, setOrder] = useState('asc');
 
@@ -88,13 +89,16 @@ export default function PiecesPage() {
   const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
+  const [status, setStatus] = useState(false);
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [actualId, setActualId] = useState(0);
 
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event, id, isActive) => {
     setActualId(id)
     setOpen(event.currentTarget);
+    setStatus(isActive);
+
   };
 
   const handleCloseMenu = () => {
@@ -152,9 +156,12 @@ export default function PiecesPage() {
   const isNotFound = !filteredUsers.length && !!filterName;
   useEffect(() => {
     const getData = async () => {
+
       console.log("NOTA-SE:", userData)
+      console.log("NOTA-SE ----:", curentWarehouse)
+
       try {
-        const url = userData.data?.position === "2" ? `/piece/warehouse/${userData.data.warehouse.id}` : `/piece`;
+        const url = Number(userData.data?.position) > 1 ? `/piece/warehouse/${curentWarehouse}?onlyActive=${userData.data.position === "1" ? "0" : "1"}` : `/piece?onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
         const response = await api.get(url)
         setData(response.data)
         console.log(response.data)
@@ -169,7 +176,7 @@ export default function PiecesPage() {
     const getData = async () => {
       try {
         if (search.length <= 1) {
-          const url = `/piece`;
+          const url = Number(userData.data?.position) > 1 ? `/piece/warehouse/${curentWarehouse}?onlyActive=${userData.data.position === "1" ? "0" : "1"}` : `/piece?onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
           const response = await api.get(url)
           setData(response.data)
         }
@@ -178,14 +185,28 @@ export default function PiecesPage() {
       }
     }
     getData()
-  }, [search])
+  }, [search, curentWarehouse])
   const handleSearch = async () => {
     try {
 
-      const url = `/piece?searchParam=${search}`;
+      const url = `/piece?searchParam=${search}&onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
       const response = await api.get(url)
       setData(response.data)
       console.log(response.data)
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  const handleChangeStatus = async (e) => {
+    try {
+
+      const url = `piece/change-status/${actualId}?status=${status ? 0 : 1}`;
+      await api.get(url)
+      const response = await api.get('/piece')
+      setData(response.data)
+
+      setOpen(false);
 
     } catch (e) {
       console.log(e)
@@ -233,7 +254,7 @@ export default function PiecesPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, description, quantity, price, partNumber } = row;
+                    const { id, name, description, quantity, price, partNumber, isActive } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -258,9 +279,11 @@ export default function PiecesPage() {
 
                         <TableCell align="left">{price}</TableCell>
 
-
+                        <TableCell align="left">
+                          <Label color={isActive ? 'success' : 'error'}>{isActive ? 'Activo' : 'Inactivo'}</Label>
+                        </TableCell>
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, isActive) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -335,10 +358,10 @@ export default function PiecesPage() {
             Editar
           </MenuItem>
 
-          <MenuItem sx={{ color: 'error.main' }}>
+          {userData.data.position === "1" && <MenuItem onClick={() => { handleChangeStatus() }} >
             <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-            Eliminar
-          </MenuItem>
+            {!status ? 'Activar' : 'Desactivar'}
+          </MenuItem>}
         </Popover>
       </Container >
 

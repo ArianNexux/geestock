@@ -49,14 +49,19 @@ export default function FormSupplier() {
     const { addToast } = Toast()
     const { id } = useParams()
     const { userData } = useContext(AppContext)
-
+    const [isActive, setIsActive] = useState(true)
     useEffect(() => {
         const getData = async (data) => {
             const url = `/supplier/${id}`
             const response = await api.get(url)
             console.log("FINAL RESPONSE", response.data)
-            setValue("name", response.data.name)
-            setValue("code", response.data.code)
+            if (id !== undefined) {
+
+                setValue("name", response.data.name)
+                setValue("code", response.data.code)
+                setIsActive(response.data.isActive)
+                console.log("DATA IS ACTIVE", response)
+            }
         }
 
         getData()
@@ -149,8 +154,8 @@ export default function FormSupplier() {
                         </Box>
 
                         <Box mt={5}>
-                            <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
-                                Cadastrar
+                            <Button disabled={!isActive} type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
+                                {id !== undefined ? 'Actualizar' : 'Cadastrar'}
                             </Button>
                         </Box >
                     </form>

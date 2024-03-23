@@ -21,7 +21,7 @@ export default function CustomFormControlTextArea({
               />
             <Textarea defaultValue={defaultValue} rows={4}
  sx={{width:"70%", height:"200px,", border:"1.5px solid grey", padding:"6px", borderRadius: "4px", marginTop:"15px"}} isDisabled={isDisabled} placeholder={placeholder} {...register(fieldNameObject)} />               
-        <FormErrorMessage>
+        <FormErrorMessage sx={{textColor: 'red'}}>
             {errors[fieldNameObject] && <>{REQUIRED_FIELD}</>}
         </FormErrorMessage>
             </FormControl>

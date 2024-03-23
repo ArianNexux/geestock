@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 });
 
 // Create Document Component
-const MyDocument = (data) => {
+const MyRequestNote = (data) => {
     const docDefinition = {
         content: [
             {
@@ -39,13 +39,11 @@ const MyDocument = (data) => {
                     {
                         text: [
                             {
-                                text: "\tNota de Entrega - GESSTOCK", style: 'header', margin: [50, 5, 50, 5],
+                                text: "\tInformações da requisição - " + data.numberPr, style: 'header', margin: [50, 5, 50, 5],
                             },
                             { text: '\n' },
                             { text: '\n' },
-                            { text: 'Recibo Por:\n', margin: [0, 5, 0, 5] },
                             { text: '\n' },
-                            { text: 'Entregue Por:\n', margin: [0, 5, 0, 5] },
                         ],
                     },
                 ],
@@ -117,8 +115,8 @@ const MyDocument = (data) => {
                             }
                         ],
                         [
-                            { text: data.warehouseIncomming, style: 'cellStyle' },
-                            { text: data.warehouseOutcomming, style: 'cellStyle' },
+                            { text: data.warehouseIncomming.name, style: 'cellStyle' },
+                            { text: data.warehouseOutcomming.name, style: 'cellStyle' },
                             { text: data.numberPr, style: 'cellStyle' },
                             { text: data.createdAt, style: 'cellStyle' },
                         ]
@@ -187,7 +185,7 @@ const MyDocument = (data) => {
                         ]
                     },
                     headerRows: 1,
-                    widths: ['*', 'auto', 100, '*', '*', '*'],
+                    widths: ['*', 'auto', 100, '*'],
                     body: [
                         [
                             {
@@ -197,7 +195,7 @@ const MyDocument = (data) => {
                                 style: 'anotherStyle',
                             },
                             {
-                                text: 'Descrição',
+                                text: 'Localização da Peça',
                                 bold: true,
                                 fillColor: '#C8C8C8',
                                 style: 'anotherStyle',
@@ -208,34 +206,19 @@ const MyDocument = (data) => {
                                 fillColor: '#C8C8C8',
                                 style: 'anotherStyle',
                             },
-
                             {
-                                text: 'Localização',
-                                bold: true,
-                                fillColor: '#C8C8C8',
-                                style: 'anotherStyle',
-                            },
-                            {
-                                text: 'Quantitidade',
-                                bold: true,
-                                fillColor: '#C8C8C8',
-                                style: 'anotherStyle',
-                            },
-                            {
-                                text: 'Nº de Série',
+                                text: 'Quantidade',
                                 bold: true,
                                 fillColor: '#C8C8C8',
                                 style: 'anotherStyle',
                             }
                         ],
-                        ...data.returnmentData.map(e => {
+                        ...data.RequestsPieces.map(e => {
                             return ([
-                                { text: e.pieceName, style: 'cellStyle' },
-                                { text: e.description, style: 'cellStyle' },
-                                { text: e.partNumber, style: 'cellStyle' },
-                                { text: ' ', style: 'cellStyle' },
-                                { text: e.quantityGiven, style: 'cellStyle' },
-                                { text: e.numberSeries, style: 'cellStyle' },
+                                { text: e.piece.name, style: 'cellStyle' },
+                                { text: e.piece.locationInWarehouse, style: 'cellStyle' },
+                                { text: e.piece.partNumber, style: 'cellStyle' },
+                                { text: e.piece.quantity, style: 'cellStyle' },
                             ])
                         }),
 
@@ -272,4 +255,4 @@ const MyDocument = (data) => {
     )
 };
 
-export default MyDocument
+export default MyRequestNote
