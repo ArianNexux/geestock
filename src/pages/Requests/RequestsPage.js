@@ -4,6 +4,8 @@ import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 // @mui
 import {
   Card,
@@ -36,12 +38,17 @@ import USERLIST from '../../_mock/user';
 import api from '../../utils/api';
 import { AppContext } from '../../context/context';
 import MyRequestNote from '../../components/InvoiceReciepment/request-note'
+import { InputSearchSchema } from './schema.ts';
+import CustomFormControlSelect from '../../components/CustomFormControlSelect';
+import { Toast } from '../../components/Toast';
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome da Requisição', alignRight: false },
   { id: 'pr', label: 'PR', alignRight: false },
-  { id: 'company', label: 'Armazém de destino', alignRight: false },
+  { id: 'company', label: 'Armazém de Origem', alignRight: false },
+  { id: 'company', label: 'Armazém de Destino', alignRight: false },
   { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
@@ -83,6 +90,7 @@ export default function RequestsPage() {
   const [page, setPage] = useState(0);
 
   const [order, setOrder] = useState('asc');
+  const { addToast } = Toast()
 
   const [selected, setSelected] = useState([]);
 
@@ -92,16 +100,56 @@ export default function RequestsPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [actualId, setActualId] = useState(0);
+  const [actualState, setActualState] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    control,
+    watch,
+    setError,
+    getValues,
+    setValue,
+    clearErrors,
+  } = useForm({
+    resolver: zodResolver(InputSearchSchema),
+  });
   const handleOpenDocument = async () => {
     const url = `/request/${actualId}`
     const response = await api.get(url)
-    console.log(response.data)
+    console.log("nota de requisicao", response.data)
+
     MyRequestNote(response.data)
   }
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event, id, state) => {
     setActualId(id)
+    setActualState(state)
     setOpen(event.currentTarget);
   };
+
+  const getData = async () => {
+    try {
+      const url = Number(userData.data.position) <= 1 ? `/request?onlyActive=1` : `/request/warehouseoutcomming/${curentWarehouse}?onlyActive=1`;
+      const response = await api.get(url)
+      setData(response.data)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  const handleRejectRequest = async (e) => {
+    const url = `/request/revert-request/${actualId}`
+    const response = await api.put(url)
+    setValue("search", { label: "Todos", value: "Todos" })
+    if (response.status === 200 || response.status === 201) {
+      addToast({
+        title: "Requisição rejeitada com sucesso!",
+        status: "success"
+      })
+      getData()
+
+    }
+  }
+  const requestStatus = watch("search")
 
   const handleCloseMenu = () => {
     setOpen(null);
@@ -121,22 +169,31 @@ export default function RequestsPage() {
     }
     setSelected([]);
   };
-  const [data, setData] = useState([])
-  const { userData, curentWarehouse } = useContext(AppContext)
 
   useEffect(() => {
-    console.log("WAREHOUSE", curentWarehouse)
     const getData = async () => {
       try {
-        const url = Number(userData.data.position) <= 1 ? `/request?onlyActive=1` : `/request/warehouseoutcomming/${curentWarehouse}?onlyActive=1`;
-        const response = await api.get(url)
-        setData(response.data)
+        if (search.length <= 1) {
+          const url = requestStatus.value !== "Todos" ? `/request/by-state/${requestStatus.value}` : Number(userData.data.position) <= 1 ? `/request?onlyActive=1` : `/request/warehouseoutcomming/${curentWarehouse}?onlyActive=1`;
+          const response = await api.get(url)
+          setData(response.data)
+        }
       } catch (e) {
         console.log(e)
       }
     }
     getData()
+  }, [requestStatus])
+
+  const [data, setData] = useState([])
+  const { userData, curentWarehouse } = useContext(AppContext)
+
+  useEffect(() => {
+    setValue("search", { label: 'Em Curso', value: 'Em Curso' })
+
+    getData()
   }, [])
+
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
     let newSelected = [];
@@ -223,6 +280,28 @@ export default function RequestsPage() {
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
+          <Box sx={{ m: 1, minWidth: '40%', marginRight: '50px' }}>
+            <CustomFormControlSelect
+              errors={errors}
+              control={control}
+              label="Estado"
+              isDisabled={false}
+              fieldNameObject="search"
+              fieldName="Estado"
+              isMulti={false}
+              parent={{ value: 1 }}
+              options={
+                [
+                  { label: 'Todos', value: 'Todos' },
+                  { label: 'Em Curso', value: 'Em Curso' },
+                  { label: 'Finalizada', value: 'Finalizada' },
+                  { label: 'Finalizada Parcialmente', value: 'Finalizada Parcialmente' },
+                  { label: 'Rejeitada', value: 'Rejeitada' }
+                ]
+              }
+              isSearchable
+            />
+          </Box>
           <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo nome ou Número PR" type="email" sx={{ minWidth: "50%" }} />
           <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
@@ -245,12 +324,12 @@ export default function RequestsPage() {
                 />
                 <TableBody>
                   {data.map((row) => {
-                    const { id, name, quantity, state, warehouseIncomming: { name: warehouseName }, numberPr } = row;
+                    const { id, name, quantity, state, warehouseIncomming: { name: warehouseName }, warehouseOutcomming: { name: warehouseOriginName }, numberPr } = row;
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" >
 
-                        <TableCell component="th" scope="row" padding="none">
+                        <TableCell component="th" scope="row">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" style={{ textIndent: '20px' }} noWrap>
                               {name}
@@ -260,15 +339,17 @@ export default function RequestsPage() {
 
 
                         <TableCell align="left">{numberPr}</TableCell>
+
+                        <TableCell align="left">{warehouseOriginName}</TableCell>
+
                         <TableCell align="left">{warehouseName}</TableCell>
 
-
                         <TableCell align="left">
-                          <Label >{sentenceCase(state)}</Label>
+                          <Label color={state === 'Finalizada' ? 'info' : state.toLowerCase() === 'finalizada parcialmente' ? 'warning' : state.toLowerCase() === 'rejeitada' ? 'error' : 'success'}>{sentenceCase(state)}</Label>
                         </TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, state) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -312,7 +393,8 @@ export default function RequestsPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={data.length}
+            labelRowsPerPage={"Linhas por página"}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -347,10 +429,10 @@ export default function RequestsPage() {
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Imprimir
         </MenuItem>
-        <MenuItem sx={{ color: 'error.main' }}>
+        {actualState === "Em Curso" && (<MenuItem onClick={() => { handleRejectRequest() }} sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Cancelar
-        </MenuItem>
+          Rejeitar
+        </MenuItem>)}
       </Popover>
     </>
   );

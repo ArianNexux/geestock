@@ -38,7 +38,7 @@ const navConfig = [
     title: 'Notas de Entrega',
     path: '/dashboard/notas-entrega',
     icon: iconPng('nota-de-entrega'),
-    permission: ["1"]
+    permission: ["1", "2"]
 
   },
   {

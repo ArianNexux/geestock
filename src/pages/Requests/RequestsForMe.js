@@ -4,7 +4,8 @@ import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 // @mui
 import {
   Card,
@@ -39,15 +40,16 @@ import { AppContext } from '../../context/context';
 import { Toast } from '../../components/Toast';
 import { ModalConfirmRequest } from '../../components/modal/modalConfirmRequest';
 import MyRequestNote from '../../components/InvoiceReciepment/request-note'
-
+import { InputSearchSchema } from './schema.ts';
+import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome da Requisição', alignRight: false },
   { id: 'pr', label: 'PR', alignRight: false },
-  { id: 'company', label: 'Armazem', alignRight: false },
+  { id: 'company', label: 'Armazem de Destino', alignRight: false },
   { id: 'status', label: 'Estado', alignRight: false },
-  { id: '' },
+  { id: '', label: '', alignRight: false },
 ];
 
 // ----------------------------------------------------------------------
@@ -98,6 +100,21 @@ export default function RequestsForMe() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const { addToast } = Toast()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    control,
+    watch,
+    setError,
+    getValues,
+    setValue,
+    clearErrors,
+  } = useForm({
+    resolver: zodResolver(InputSearchSchema),
+  });
+
+  const requestStatus = watch("search")
 
   const handleOpenMenu = (event, id, state) => {
     console.log(id)
@@ -109,7 +126,29 @@ export default function RequestsForMe() {
   const handleCloseMenu = () => {
     setOpen(null);
   };
-
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        if (search.length <= 1) {
+          let url = ""
+          if (requestStatus.value === "Todos" && Number(userData.data.position) == 1) {
+            url = "/request?onlyActive=1"
+          } else if (requestStatus.value !== "Todos" && Number(userData.data.position) == 1) {
+            url = `/request/by-state/${requestStatus.value}`
+          } else if (requestStatus.value === "Todos" && Number(userData.data.position) == 2) {
+            url = `/request/warehouseoutcomming/${curentWarehouse ?? curentWarehouse.id}?onlyActive=1`
+          } else {
+            url = `/request/by-state/${requestStatus.value}?warehouseId=${curentWarehouse ?? curentWarehouse.id}`
+          }
+          const response = await api.get(url)
+          setData(response.data)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [requestStatus])
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -127,7 +166,7 @@ export default function RequestsForMe() {
   const handleOpenDocument = async () => {
     const url = `/request/${currentId}`
     const response = await api.get(url)
-    console.log(response.data)
+    console.log("nota de requisicao", response.data)
     MyRequestNote(response.data)
   }
   const handleClick = (event, name) => {
@@ -161,18 +200,20 @@ export default function RequestsForMe() {
   const [data, setData] = useState([])
   const [isOpen, setIsOpen] = useState(false)
   const { userData, curentWarehouse } = useContext(AppContext)
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const url = `/request/warehouseincomming/${curentWarehouse}?onlyActive=1`;
-        const response = await api.get(url)
-        setData(response.data)
-        console.log("LOGAR", response.data)
-      } catch (e) {
-        console.log(e)
-      }
+  const getData = async () => {
+    try {
+      const url = `/request/warehouseoutcomming/${curentWarehouse}?onlyActive=1`;
+      const response = await api.get(url)
+      setData(response.data)
+      console.log("LOGAR", response.data)
+    } catch (e) {
+      console.log(e)
     }
+  }
+  useEffect(() => {
+    setValue("search", { label: 'Em Curso', value: 'Em Curso' })
+
+
     getData()
   }, [])
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
@@ -185,7 +226,16 @@ export default function RequestsForMe() {
     const getData = async () => {
       try {
         if (search.length <= 1) {
-          const url = `/request/warehouseincomming/${curentWarehouse}?onlyActive=1`;
+          let url = ""
+          if (requestStatus.value === "Todos" && Number(userData.data.position) == 1) {
+            url = "/request?onlyActive=1"
+          } else if (requestStatus.value !== "Todos" && Number(userData.data.position) == 1) {
+            url = `/request/by-state/${requestStatus.value}`
+          } else if (requestStatus.value === "Todos" && Number(userData.data.position) == 2) {
+            url = `/request/warehouseoutcomming/${curentWarehouse ?? curentWarehouse.id}?onlyActive=1`
+          } else {
+            url = `/request/by-state/${requestStatus.value}?warehouseId=${curentWarehouse ?? curentWarehouse.id}`
+          }
           const response = await api.get(url)
           setData(response.data)
         }
@@ -198,7 +248,7 @@ export default function RequestsForMe() {
   const handleSearch = async () => {
     try {
 
-      const url = `/request/warehouseincomming/${curentWarehouse}?searchParam=${search}&onlyActive=1`;
+      const url = `/request/warehouseoutcomming/${curentWarehouse}?searchParam=${search}&onlyActive=1`;
       const response = await api.get(url)
       setData(response.data)
       console.log(response.data)
@@ -228,6 +278,29 @@ export default function RequestsForMe() {
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
+          <Box sx={{ m: 1, minWidth: '40%', marginRight: '50px' }}>
+            <CustomFormControlSelect
+              errors={errors}
+              control={control}
+              label="Estado"
+              isDisabled={false}
+              fieldNameObject="search"
+              fieldName="Estado"
+              isMulti={false}
+              parent={{ value: 1 }}
+              options={
+                [
+                  { label: 'Todos', value: 'Todos' },
+                  { label: 'Em Curso', value: 'Em Curso' },
+                  { label: 'Finalizada', value: 'Finalizada' },
+                  { label: 'Finalizada Parcialmente', value: 'Finalizada Parcialmente' },
+                  { label: 'Rejeitada', value: 'Rejeitada' }
+
+                ]
+              }
+              isSearchable
+            />
+          </Box>
           <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo nome ou Número PR" type="email" sx={{ minWidth: "50%" }} />
           <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
             Pesquisar
@@ -252,7 +325,7 @@ export default function RequestsForMe() {
                   {
                     data.map((row) => {
 
-                      const { id, state, name, numberPr, warehouseOutcomming: { name: warehouseName } } = row;
+                      const { id, state, name, numberPr, warehouseIncomming: { name: warehouseName } } = row;
 
                       return (
                         <TableRow hover key={id} tabIndex={-1} role="checkbox" >
@@ -272,7 +345,7 @@ export default function RequestsForMe() {
 
 
                           <TableCell align="left">
-                            <Label color={(state === 'Finalizada' && 'error') || 'success'}>{sentenceCase(state)}</Label>
+                            <Label color={state === 'Finalizada' ? 'info' : state.toLowerCase() === 'finalizada parcialmente' ? 'warning' : state.toLowerCase() === 'rejeitada' ? 'error' : 'success'}>{sentenceCase(state)}</Label>
                           </TableCell>
 
                           <TableCell align="right">
@@ -323,6 +396,7 @@ export default function RequestsForMe() {
             count={USERLIST.length}
             rowsPerPage={rowsPerPage}
             page={page}
+            labelRowsPerPage={"Linhas Por Página"}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
@@ -364,15 +438,12 @@ export default function RequestsForMe() {
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Imprimir
         </MenuItem>
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Rejeitar
-        </MenuItem>
       </Popover>
       <ModalConfirmRequest
         setIsOpen={setIsOpen}
         isOpen={isOpen}
         id={currentId}
+        callBack={getData}
       />
     </>
   );

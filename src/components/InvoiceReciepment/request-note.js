@@ -4,6 +4,16 @@ import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from "pdfmake/build/vfs_fonts";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
+function getCurrentDateTime() {
+    let currentDate = new Date();
+    let day = String(currentDate.getDate()).padStart(2, '0');
+    let month = String(currentDate.getMonth() + 1).padStart(2, '0'); // January is 0!
+    let year = currentDate.getFullYear();
+    let hours = String(currentDate.getHours()).padStart(2, '0');
+    let minutes = String(currentDate.getMinutes()).padStart(2, '0');
+    let formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
+    return formattedDate;
+}
 
 // Create styles
 const styles = StyleSheet.create({
@@ -115,10 +125,10 @@ const MyRequestNote = (data) => {
                             }
                         ],
                         [
-                            { text: data.warehouseIncomming.name, style: 'cellStyle' },
                             { text: data.warehouseOutcomming.name, style: 'cellStyle' },
+                            { text: data.warehouseIncomming.name, style: 'cellStyle' },
                             { text: data.numberPr, style: 'cellStyle' },
-                            { text: data.createdAt, style: 'cellStyle' },
+                            { text: getCurrentDateTime(), style: 'cellStyle' },
                         ]
                         ,
 
@@ -215,10 +225,10 @@ const MyRequestNote = (data) => {
                         ],
                         ...data.RequestsPieces.map(e => {
                             return ([
-                                { text: e.piece.name, style: 'cellStyle' },
-                                { text: e.piece.locationInWarehouse, style: 'cellStyle' },
-                                { text: e.piece.partNumber, style: 'cellStyle' },
-                                { text: e.piece.quantity, style: 'cellStyle' },
+                                { text: e.name, style: 'cellStyle' },
+                                { text: e.locationInWarehouse, style: 'cellStyle' },
+                                { text: e.partNumber, style: 'cellStyle' },
+                                { text: e.quantity, style: 'cellStyle' },
                             ])
                         }),
 

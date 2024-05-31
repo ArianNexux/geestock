@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useNavigate, useParams } from 'react-router-dom'
@@ -54,6 +55,8 @@ const TABLE_HEAD_UPDATE = [
     { id: 'name', label: 'Nome', alignRight: false },
     { id: 'partNumber', label: 'PN', alignRight: false },
     { id: 'quantityRequested', label: 'Quantidade Requerida', alignRight: false },
+    { id: 'quantityGiven', label: 'Quantidade Fornecida', alignRight: false },
+    { id: 'quantityGiven', label: 'Quantidade Em Falta', alignRight: false },
 ];
 // ----------------------------------------------------------------------
 
@@ -183,10 +186,10 @@ export default function FormRequests() {
     const [isOpen, setIsOpen] = useState(false)
     const [Open, setOpen] = useState(false)
     const { userData } = useContext(AppContext)
-    const { id } = useParams()
+    const { id: idRoute } = useParams()
     const [rows, setRows] = useState([])
     const [search, setSearch] = useState("")
-    const filteredUsers = applySortFilter(id === undefined || id === '' ? dataPieces : rows, getComparator(order, orderBy), filterName);
+    const filteredUsers = applySortFilter(idRoute === undefined || idRoute === '' ? dataPieces : rows, getComparator(order, orderBy), filterName);
     const isNotFound = !filteredUsers.length && !!filterName;
     useEffect(() => {
         const getData = async () => {
@@ -199,14 +202,19 @@ export default function FormRequests() {
                 })))
                 const urlPieces = `/piece/warehouse/${response.data[0].id}?onlyActive=1`;
                 const responsePieces = await api.get(urlPieces)
+
                 setDataPieces([...responsePieces.data])
-                console.log("LOGAR", response.data)
+                console.log("LOGAR", responsePieces.data)
             } catch (e) {
                 console.log(e)
             }
         }
         getData()
     }, [])
+
+    useEffect(() => {
+        setSelected([])
+    }, [warehouse, warehouseDestiny])
 
     useEffect(() => {
         const getData = async () => {
@@ -223,23 +231,23 @@ export default function FormRequests() {
     }, [warehouse])
     useEffect(() => {
         const getData = async (data) => {
-            const url = `/request/${id}`
+            const url = `/request/${idRoute}`
             const response = await api.get(url)
             console.log("FINAL RESPONSE", response.data)
-            setIsFinished(response.data.state === "Finalizada" || userData.data.position === "2")
+            setIsFinished(response.data.state === "Finalizada" || response.data.state === "finalizada parcialmente" || userData.data.position === "2")
             setValue("name", response.data.name)
             setValue("numberPr", response.data.numberPr)
-            setValue("container", { label: response.data.warehouseIncomming.name, value: response.data.warehouseIdIncomming })
-            setValue("containerDestiny", { label: response.data.warehouseOutcomming.name, value: response.data.warehouseIdOutcomming })
-            console.log(response.data.RequestsPieces)
+            setValue("containerDestiny", { label: response.data.warehouseIncomming.name, value: response.data.warehouseIdIncomming })
+            setValue("container", { label: response.data.warehouseOutcomming.name, value: response.data.warehouseIdOutcomming })
             setRows(
                 response.data.RequestsPieces.map((e) => ({
                     quantity: Number(e.quantity),
-                    piece: e.piece.name,
-                    name: e.piece.name,
-                    partNumber: e.piece.partNumber,
-                    description: e.piece.description,
-                    price: Number(e.piece.price)
+                    quantityGiven: Number(e.quantityGiven),
+                    piece: e.name,
+                    name: e.name,
+                    partNumber: e.partNumber,
+                    description: e.description,
+                    price: Number(e.price)
                 })))
 
             setDataPieces(response.data.RequestsPieces.map((e) => ({
@@ -280,8 +288,7 @@ export default function FormRequests() {
     }, [search])
 
     const onSubmit = async (data) => {
-        console.log(errors)
-        console.log(data)
+
         if (warehouseDestiny.value === warehouse.value) {
             addToast({
                 title: "O Armazém de destino não pode ser igual ao Armazém de origem!",
@@ -290,21 +297,41 @@ export default function FormRequests() {
             return;
         }
         try {
+
+            const hasInvalidRequest = selected.findIndex(e => Number(e.quantityRequested) > Number(e.quantity))
+            console.log("hasInvalidRequest", hasInvalidRequest)
+
+            if (hasInvalidRequest !== -1) {
+                addToast({
+                    title: "Não é possível requerir uma quantidade de peça maior que a existente no stock, Verique as quantidades e tente novamente!",
+                    status: "warning"
+                })
+                return;
+            }
+
+            if (selected.length <= 0) {
+                addToast({
+                    title: "Selecione pelo menos uma peça para cadastrar a requisição!",
+                    status: "warning"
+                })
+                return;
+            }
             const data = {
                 name,
                 request: selected.map(row => ({
                     pieceId: row.id,
-                    quantity: Number(row.quantityRequested)
+                    quantityRequested: Number(row.quantityRequested),
+                    quantity: Number(row.quantity)
                 })),
-                warehouseIdOutcomming: warehouseDestiny.value,
-                warehouseIdIncomming: warehouse.value,
+                warehouseIdOutcomming: warehouse.value,
+                warehouseIdIncomming: warehouseDestiny.value,
                 numberPr,
                 userId: userData.data.id
             }
 
             let response;
-            const url = id === undefined ? `request` : `/request/${id}`
-            if (id === undefined || id === '') {
+            const url = idRoute === undefined ? `request` : `/request/${idRoute}`
+            if (idRoute === undefined || idRoute === '') {
                 response = await api.post(url, {
                     ...data,
                     state: "Em Curso"
@@ -313,10 +340,10 @@ export default function FormRequests() {
             } else {
                 response = await api.patch(url, {
                     ...data,
-                    id
+                    idRoute
                 })
             }
-            if (response.status === 201) {
+            if (response.status === 201 || response.status === 200) {
                 addToast({
                     title: "Requisição feita com sucesso, O Armazem receberá para análise!",
                     status: "success"
@@ -338,7 +365,7 @@ export default function FormRequests() {
                 Início > Requisições > Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
-                    <Button onClick={() => { navigate(`/dashboard/requisicao`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
+                    <Button onClick={() => { window.history.back() }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>
@@ -380,7 +407,7 @@ export default function FormRequests() {
                                 errors={errors}
                                 fieldName={`Armazém Destino`}
                                 fieldNameObject="containerDestiny"
-                                isDisabled={id !== undefined}
+                                isDisabled={idRoute !== undefined}
                                 parent={{ value: 1 }}
                                 options={data}
                                 isSearchable
@@ -394,7 +421,7 @@ export default function FormRequests() {
                                 errors={errors}
                                 fieldName={`Armazém Origem`}
                                 fieldNameObject="container"
-                                isDisabled={id !== undefined}
+                                isDisabled={idRoute !== undefined}
                                 parent={{ value: 1 }}
                                 options={data}
                                 isSearchable
@@ -410,7 +437,7 @@ export default function FormRequests() {
                         <Card>
 
                             <Scrollbar>
-                                {id !== undefined || id !== '' && <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "10px" }} >
+                                {idRoute !== undefined || idRoute !== '' && <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "10px" }} >
                                     <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo Part Number ou Nome da Peça" type="email" sx={{ minWidth: "50%" }} />
                                     <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
                                         Pesquisar
@@ -421,7 +448,7 @@ export default function FormRequests() {
                                         <UserListHead
                                             order={order}
                                             orderBy={orderBy}
-                                            headLabel={id !== undefined ? TABLE_HEAD_UPDATE : TABLE_HEAD}
+                                            headLabel={idRoute !== undefined ? TABLE_HEAD_UPDATE : TABLE_HEAD}
                                             rowCount={USERLIST.length}
                                             numSelected={selected.length}
                                             onRequestSort={handleRequestSort}
@@ -430,14 +457,13 @@ export default function FormRequests() {
                                         />
                                         <TableBody>
                                             {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                                const { id, name, description, quantity, partNumber } = row;
-                                                const selectedUser = selected.findIndex(obj => obj.id === id) !== -1;
-                                                console.log("CONSOLE LOG", row)
+                                                const { id: idRow, name, description, quantity, partNumber, quantityGiven } = row;
+                                                const selectedUser = selected.findIndex(obj => obj.id === idRow) !== -1;
                                                 return (
 
                                                     <>
 
-                                                        <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+                                                        <TableRow hover key={idRow} tabIndex={-1} role="checkbox" selected={selectedUser}>
                                                             <TableCell padding="checkbox">
                                                                 <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, row)} />
                                                             </TableCell>
@@ -449,27 +475,35 @@ export default function FormRequests() {
                                                             <TableCell align="left">{partNumber}</TableCell>
 
 
-
                                                             <TableCell align="left">{quantity}</TableCell>
+
                                                             {
-                                                                id !== undefined &&
-                                                                <TableCell align="left">
-                                                                    <Box mb={5}>
-                                                                        <Input
-                                                                            placeholder={"Insira a quantidade number"}
-                                                                            type="number"
-                                                                            disabled={!selectedUser}
-                                                                            minRows={0}
-                                                                            onBlur={(e) => {
-                                                                                handleChangeQuantity(e, row)
-                                                                            }}
-                                                                            sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
-                                                                        />
+                                                                idRoute !== undefined && (<>
+                                                                    <TableCell align="left">{quantityGiven}</TableCell>
+                                                                    <TableCell align="left">{quantity - quantityGiven}</TableCell>
+                                                                </>)
+                                                            }
 
-                                                                    </Box>
-                                                                </TableCell>
+                                                            {
+                                                                idRoute === undefined && (<>
+                                                                    <TableCell align="left">
+                                                                        <Box mb={5}>
+                                                                            <Input
+                                                                                placeholder={"Insira a quantidade number"}
+                                                                                type="number"
+                                                                                disabled={!selectedUser}
+                                                                                minRows={0}
+                                                                                onBlur={(e) => {
+                                                                                    handleChangeQuantity(e, row)
+                                                                                }}
+                                                                                sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
+                                                                            />
+
+                                                                        </Box>
+                                                                    </TableCell>
 
 
+                                                                </>)
                                                             }
 
                                                         </TableRow>
@@ -526,7 +560,7 @@ export default function FormRequests() {
 
                         <Box mt={5}>
                             {!isFinished && <Button sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained" onClick={() => { console.log(errors) }} type="submit">
-                                {id !== undefined ? 'Actualizar' : 'Cadastrar'}
+                                {idRoute !== undefined ? 'Actualizar' : 'Cadastrar'}
                             </Button>}
                         </Box >
                     </Container >

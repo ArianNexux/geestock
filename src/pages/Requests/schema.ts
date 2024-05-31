@@ -8,5 +8,20 @@ export const UserSchema = z.object({
         label: z.string(),
         value: z.string()
     }),
+    containerDestiny: z.object({
+        label: z.string(),
+        value: z.string()
+    }),
+
+})
+
+
+export const InputSearchSchema = z.object({
+
+    search: z.object({
+        label: z.string(),
+        value: z.string()
+    }).optional(),
+
 
 })

@@ -32,6 +32,7 @@ import FormSupplier from './pages/Supplier/FormSupplier';
 import { AppContext } from './context/context';
 import LogsPage from './pages/Logs/LogsPage';
 import InvoicePage from './pages/Invoice/InvoicePage';
+import ConfirmOrder from './pages/Order/ConfirmOrder';
 
 // ----------------------------------------------------------------------
 
@@ -69,6 +70,7 @@ export default function Router() {
         { path: 'encomenda', element: <OrderPage /> },
         { path: 'encomenda/cadastrar', element: <FormOrder /> },
         { path: 'encomenda/editar/:id', element: <FormOrder /> },
+        { path: 'confirmar-encomenda/:id', element: <ConfirmOrder /> },
         { path: 'auditoria', element: <LogsPage /> },
         { path: 'notas-entrega', element: <InvoicePage /> },
         { path: 'fornecedor', element: <SupplierPage /> },

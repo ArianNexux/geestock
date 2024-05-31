@@ -260,7 +260,7 @@ export default function ContainerPage() {
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
 
 
-                        <TableCell component="th" scope="row" padding="none">
+                        <TableCell align="left" component="th" scope="row">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" noWrap>
                               {name}
@@ -322,8 +322,9 @@ export default function ContainerPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={data.length}
             rowsPerPage={rowsPerPage}
+            labelRowsPerPage={"Linhas por página"}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}

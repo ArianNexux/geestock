@@ -305,7 +305,8 @@ export default function SupplierPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={data.length}
+            labelRowsPerPage={"Linhas por página"}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

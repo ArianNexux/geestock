@@ -7,6 +7,7 @@ export default function CustomFormControlInput({
     fieldNameObject,
     isDisabled,
     fieldName,
+    defaultValue=0,
     isRequired = true,
     register,
     placeholder,

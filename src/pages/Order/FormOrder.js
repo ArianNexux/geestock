@@ -1,3 +1,4 @@
+/** eslint-disabled */
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
@@ -46,17 +47,19 @@ import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 const TABLE_HEAD = [
     { id: 'name', label: 'Nome', alignRight: false },
     { id: 'partNumber', label: 'PN', alignRight: false },
-    { id: 'warehouse', label: 'Armazem', alignRight: false },
     { id: 'quantity', label: 'Quantidade em stock', alignRight: false },
-    { id: 'quantityRequested', label: 'Quantidade Requerida', alignRight: false },
+    { id: 'quantityRequested', label: 'Quantidade', alignRight: false },
+    { id: 'price', label: 'Preço', alignRight: false },
 
 ];
 
 const TABLE_HEAD_UPDATE = [
     { id: 'name', label: 'Nome', alignRight: false },
     { id: 'partNumber', label: 'PN', alignRight: false },
-    { id: 'warehouse', label: 'Armazem', alignRight: false },
-    { id: 'quantityRequested', label: 'Quantidade Requerida', alignRight: false },
+    { id: 'quantityRequested', label: 'Quantidade', alignRight: false },
+    { id: 'quantityReceived', label: 'Quantidade Recebida', alignRight: false },
+    { id: 'quantityMiss', label: 'Quantidade em falta', alignRight: false },
+    { id: 'price', label: 'Preço Unitário', alignRight: false },
 ];
 // ----------------------------------------------------------------------
 
@@ -167,8 +170,14 @@ export default function FormOrder() {
     const handleChangeQuantity = (event, row) => {
         const selectedIndex = selected.findIndex(obj => obj.id === row.id);
         selected[selectedIndex].quantityRequested = event.target.value;
+    }
+
+    const handleChangePrice = (event, row) => {
+        const selectedIndex = selected.findIndex(obj => obj.id === row.id);
+        selected[selectedIndex].price = event.target.value;
         console.log(selected)
     }
+
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -214,26 +223,37 @@ export default function FormOrder() {
             setRows(
                 response.data.OrdersPiece.map((e) => ({
                     quantity: Number(e.quantity),
-                    piece: e.piece.name,
-                    name: e.piece.name,
-                    partNumber: e.piece.partNumber,
-                    description: e.piece.description,
-                    price: Number(e.piece.price),
-                    warehouse: e.piece.warehouse
+                    quantityGiven: Number(e.quantityGiven),
+                    piece: e.Piece.name,
+                    name: e.Piece.name,
+                    partNumber: e.Piece.partNumber,
+                    description: e.Piece.description,
+                    price: Number(e.price),
+                    warehouse: e.warehouse
                 })))
         }
-        if (id !== undefined)
+        if (id !== undefined) {
             fullFillFormData()
+        }
         getData()
     }, [])
 
     const onSubmit = async (data) => {
+        if (selected.length <= 0) {
+            addToast({
+                title: "Selecione pelo menos uma peça para prosseguir a encomenda",
+                status: "warning"
+            })
+            return;
+        }
+
 
         try {
 
-
             let response;
             const url = id === undefined ? `order` : `/order/${id}`
+
+
             if (id === undefined || id === '') {
                 response = await api.post(url, {
                     ...data,
@@ -352,7 +372,7 @@ export default function FormOrder() {
 
                             <Scrollbar>
                                 {id !== undefined || id !== '' && <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "10px" }} >
-                                    <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo Part Number ou Nome da Peça" type="email" sx={{ minWidth: "50%" }} />
+                                    <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo Part Number ou Nome da Peça" type="text" sx={{ minWidth: "50%" }} />
                                     <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
                                         Pesquisar
                                     </Button>
@@ -371,7 +391,7 @@ export default function FormOrder() {
                                         />
                                         <TableBody>
                                             {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                                const { id, name, description, quantity, partNumber, warehouse: { name: warehouseName } } = row;
+                                                const { id, name, description, quantity, partNumber, price, quantityGiven } = row;
                                                 const selectedUser = selected.findIndex(obj => obj.id === id) !== -1;
 
                                                 return (
@@ -388,28 +408,52 @@ export default function FormOrder() {
                                                                 </Typography>
                                                             </TableCell>
                                                             <TableCell align="left">{partNumber}</TableCell>
-                                                            <TableCell align="left">{warehouseName}</TableCell>
 
 
 
                                                             <TableCell align="left">{quantity}</TableCell>
                                                             {
-                                                                id !== undefined &&
-                                                                <TableCell align="left">
-                                                                    <Box mb={5}>
-                                                                        <Input
-                                                                            placeholder={"Insira a quantidade number"}
-                                                                            type="number"
-                                                                            disabled={!selectedUser}
-                                                                            minRows={0}
-                                                                            onBlur={(e) => {
-                                                                                handleChangeQuantity(e, row)
-                                                                            }}
-                                                                            sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
-                                                                        />
+                                                                id !== undefined ? (
+                                                                    <>
+                                                                        <TableCell align="left">
+                                                                            <Box mb={5}>
+                                                                                <Input
+                                                                                    placeholder={"Insira a quantidade number"}
+                                                                                    type="number"
+                                                                                    disabled={!selectedUser}
+                                                                                    minRows={0}
+                                                                                    onBlur={(e) => {
+                                                                                        handleChangeQuantity(e, row)
+                                                                                    }}
+                                                                                    sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
+                                                                                />
 
-                                                                    </Box>
-                                                                </TableCell>
+                                                                            </Box>
+                                                                        </TableCell>
+                                                                        <TableCell align="left">
+                                                                            <Box mb={5}>
+                                                                                <Input
+                                                                                    placeholder={"Insira o preço"}
+                                                                                    type="number"
+                                                                                    disabled={!selectedUser}
+                                                                                    minRows={0}
+                                                                                    onBlur={(e) => {
+                                                                                        handleChangePrice(e, row)
+                                                                                    }}
+                                                                                    sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
+                                                                                />
+
+                                                                            </Box>
+                                                                        </TableCell>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <TableCell align="left">{quantityGiven}</TableCell>
+                                                                        <TableCell align="left">{quantity - quantityGiven}</TableCell>
+                                                                        <TableCell align="left">{price}</TableCell>
+                                                                    </>
+
+                                                                )
 
 
                                                             }
@@ -464,8 +508,8 @@ export default function FormOrder() {
                         </Card>
 
                         <Box mt={5}>
-                            {!isFinished && <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
-                                {id !== undefined ? 'Actualizar' : 'Cadastrar'}
+                            {id === undefined && <Button type="submit" sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
+                                Cadastrar
                             </Button>}
                         </Box >
                     </form>

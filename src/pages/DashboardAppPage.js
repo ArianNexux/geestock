@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 import { useNavigate } from 'react-router-dom';
-import { filter } from 'lodash';
+import { filter, random } from 'lodash';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
 // @mui
@@ -59,18 +59,19 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 import USERLIST from '../_mock/user';
 // ----------------------------------------------------------------------
 
-const TABLE_HEAD = [
-  { id: 'name', label: 'Nome', alignRight: false },
-  { id: 'partNumber', label: 'PN', alignRight: false },
-  { id: 'description', label: 'Descrição', alignRight: false },
-  { id: 'quantity', label: 'Quantidade', alignRight: false },
-];
-
 const TABLE_HEAD_ALL = [
   { id: 'name', label: 'Nome', alignRight: false },
   { id: 'partNumber', label: 'PN', alignRight: false },
-  { id: 'warehouse', label: 'Armazém', alignRight: false },
   { id: 'description', label: 'Descrição', alignRight: false },
+  { id: 'price', label: 'Preço', alignRight: false },
+  { id: 'quantity', label: 'Quantidade', alignRight: false },
+];
+
+const TABLE_HEAD_WAREHOUSE = [
+  { id: 'name', label: 'Nome', alignRight: false },
+  { id: 'partNumber', label: 'PN', alignRight: false },
+  { id: 'description', label: 'Descrição', alignRight: false },
+  { id: 'price', label: 'Preço', alignRight: false },
   { id: 'quantity', label: 'Quantidade', alignRight: false },
 ];
 // ----------------------------------------------------------------------
@@ -107,7 +108,7 @@ function applySortFilter(array, comparator, query) {
 export default function DashboardAppPage() {
   const theme = useTheme();
   const iconPng = (name) => <SvgColor src={`/assets/icons/navbar/${name}.png`} sx={{ width: 1, height: 1 }} />;
-  const { userData, setCurentWarehouse } = useContext(AppContext)
+  const { userData, setCurentWarehouse, curentWarehouse } = useContext(AppContext)
   const [dashboard, setDashboard] = useState({})
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
@@ -197,56 +198,90 @@ export default function DashboardAppPage() {
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
   const [data, setData] = useState([])
+  const [totalPrice, setTotalPrice] = useState(0)
   const [search, setSearch] = useState("")
   const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
   const isNotFound = !filteredUsers.length && !!filterName;
 
   useEffect(() => {
     const getData = async () => {
-      const response = await api.get('/dashboard')
+      let initialValue = curentWarehouse === "Todos"
+      const response = await api.get(initialValue ? '/dashboard' : `/dashboard/all-by-user/${curentWarehouse.id ?? curentWarehouse}`)
       setDashboard(response.data)
+      setTotalPrice(response.data.totalPrice)
       try {
-        const url = filter !== "Todos" ? `/piece/warehouse/${filter}` : `/piece`;
+        const url = filter !== "Todos" ? `/piece/warehouse/${filter}?onlyActive=1` : `/piece?onlyActive=1&onlyWithQuantity=1`;
         const response = await api.get(url)
         const responseWarehouse = await api.get("/warehouse?onlyActive=1")
         setData(response.data)
         setDataWarehouse(responseWarehouse.data)
-        console.log("WAREHOUSE DATA", response.data)
+        /*   setTotalPrice(response.data.reduce(
+             (accumulator, currentValue) => accumulator + currentValue.totalPrice,
+             0,
+           ))*/
       } catch (e) {
         console.log(e)
       }
     }
+    setPage(0);
     getData()
   }, [])
+
+
+  useEffect(() => {
+    const getData = async () => {
+      let initialValue = userData.data.position === "1" && curentWarehouse === "Todos"
+      console.log("INITIAL VALUE: ", initialValue, curentWarehouse)
+
+      const response = await api.get(initialValue ? '/dashboard' : `/dashboard/all-by-user/${curentWarehouse.id ?? curentWarehouse}`)
+      setDashboard(response.data)
+      setTotalPrice(response.data.totalPrice)
+
+      try {
+        const url = `/piece/warehouse/${warehouseId.value}?onlyActive=1`;
+        const response = await api.get(url)
+        const responseWarehouse = await api.get("/warehouse?onlyActive=1")
+        setData(response.data)
+        setDataWarehouse(responseWarehouse.data)
+
+
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    setPage(0);
+    getData()
+  }, [curentWarehouse])
 
   const handleSearch = async () => {
     try {
 
-      const url = filter !== "Todos" ? `/piece/warehouse/${filter}?searchParam=${search}` : `/piece?searchParam=${search}`;
+      const url = filter !== "Todos" ? `/piece/warehouse/${filter}?searchParam=${search}&onlyActive=1` : `/piece?searchParam=${search}&onlyActive=1`;
       const response = await api.get(url)
       setData(response.data)
-      console.log(response.data)
 
     } catch (e) {
       console.log(e)
     }
+    setPage(0);
   }
   const handleChange = async (e) => {
-    console.log("CONSOLE LOG", warehouseId.value)
     setFilter(warehouseId.value)
     try {
-      const url = warehouseId.value !== "Todos" ? `/piece/warehouse/${warehouseId.value}` : `/piece?searchParam=${search}`
+      const url = warehouseId.value !== "Todos" ? `/piece/warehouse/${warehouseId.value}?onlyActive=1` : `/piece?searchParam=${search}&onlyActive=1&onlyWithQuantity=1`
       const response = await api.get(url)
       setData(response.data)
+
     } catch (e) {
       console.log(e)
     }
+    setPage(0);
   }
   useEffect(() => {
     const getData = async () => {
       try {
         if (search.length <= 1) {
-          const url = filter !== "Todos" ? `/piece/warehouse/${filter}` : `/piece`;
+          const url = filter !== "Todos" ? `/piece/warehouse/${filter}?onlyActive=1` : `/piece?onlyActive=1`;
           const response = await api.get(url)
           setData(response.data)
         }
@@ -254,13 +289,18 @@ export default function DashboardAppPage() {
         console.log(e)
       }
     }
+    setPage(0);
     getData()
   }, [search])
 
   useEffect(() => {
-    console.log("Ola mundo como assim??")
     handleChange()
   }, [warehouseId])
+
+  useEffect(() => {
+    handleChange()
+  }, [curentWarehouse])
+
   console.log("Vendo o user data aqui:", userData)
   return (
     <>
@@ -273,23 +313,25 @@ export default function DashboardAppPage() {
           Bem-Vindo de Volta
         </Typography>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
+        <Grid container spacing={2}>
+          <Grid item md={2}>
             <AppWidgetSummary title="Requisições" total={dashboard.request} icon={'ant-design:apple-filled'} />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Armazéns" total={dashboard.warehouse} color="info" icon={'ant-design:apple-filled'} />
+          <Grid item md={2}>
+            <AppWidgetSummary title="Armazéns" total={userData.data.position === "1" ? dashboard.warehouse : userData.data.warehouse.length} color="info" icon={'ant-design:apple-filled'} />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item md={2}>
             <AppWidgetSummary title="Encomendas" total={dashboard.order} color="warning" icon={'ant-design:windows-filled'} />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item md={3}>
             <AppWidgetSummary title="Peças" total={dashboard.piece} color="error" icon={'ant-design:bug-filled'} />
           </Grid>
-
+          <Grid item md={3}>
+            <AppWidgetSummary title="Valor das Peças" total={new Intl.NumberFormat().format(Math.round(totalPrice))} color="error" icon={'ant-design:bug-filled'} />
+          </Grid>
           <Grid item xs={12} md={6} lg={12}>
             <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "10px" }} >
               <Box sx={{ m: 1, minWidth: '50%', marginRight: '50px' }}>
@@ -324,21 +366,26 @@ export default function DashboardAppPage() {
 
               <Scrollbar>
                 <TableContainer sx={{ minWidth: 900 }}>
-                  <Table>
+                  <Table
+
+                  >
                     <UserListHead
                       order={order}
                       orderBy={orderBy}
-                      headLabel={filter === "Todos" ? TABLE_HEAD_ALL : TABLE_HEAD}
-                      rowCount={USERLIST.length}
-                      numSelected={selected.length}
+                      headLabel={filter === "Todos" ? TABLE_HEAD_ALL : TABLE_HEAD_WAREHOUSE}
+                      rowCount={data.length}
+                      count={data.length}
+                      numSelected={10}
                       onRequestSort={handleRequestSort}
                       onSelectAllClick={handleSelectAllClick}
                     />
-                    <TableBody>
+                    <TableBody
+                      vocab=''
+                    >
                       {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                         row.warehouse = filter === "Todos" ? row.warehouse : { name: '' }
-                        const { id, name, description, quantity, partNumber, warehouse: { name: warehouseName } } = row;
-                        const selectedUser = selected.indexOf(description) !== -1;
+                        const { id, name, quantity, partNumber, price, description } = row;
+                        const selectedUser = selected.indexOf(id) !== -1;
 
                         return (
 
@@ -353,10 +400,10 @@ export default function DashboardAppPage() {
                               </TableCell>
                               <TableCell align="left">{partNumber}</TableCell>
 
-                              {filter === "Todos" && <TableCell align="left">{warehouseName}</TableCell>}
+
 
                               <TableCell align="left">{description}</TableCell>
-
+                              <TableCell align="left">{price}</TableCell>
                               <TableCell align="left">{quantity}</TableCell>
 
 
@@ -402,9 +449,10 @@ export default function DashboardAppPage() {
               <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={USERLIST.length}
+                count={data.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
+                labelRowsPerPage={"Linhas por página"}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
               />

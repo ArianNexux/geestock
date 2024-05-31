@@ -312,8 +312,9 @@ export default function SubcategoryPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={data.length}
             rowsPerPage={rowsPerPage}
+            labelRowsPerPage={"Linhas por página"}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}

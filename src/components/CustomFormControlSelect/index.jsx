@@ -31,6 +31,7 @@ export default function CustomFormControlSelect({
                             id={fieldNameObject}
                             value = {value || ""}
                             options={options}      
+                            
                             isSearchable={isSearchable}
                             isDisabled={isDisabled || !parent?.value}
                             onChange={(e)=>{
@@ -41,7 +42,7 @@ export default function CustomFormControlSelect({
                         )}
                     />
               
-        <FormErrorMessage>
+        <FormErrorMessage sx={{color:"red"}}>
           {errors[fieldNameObject] && <>{REQUIRED_FIELD}</>}
         </FormErrorMessage>
             </FormControl>

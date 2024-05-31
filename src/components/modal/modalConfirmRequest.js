@@ -2,7 +2,6 @@
 import { useState, useContext, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
-
 import ReactPDF from '@react-pdf/renderer';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -16,6 +15,7 @@ import TableRequestForMe from '../TableRequestForMe';
 import { OrderSchema } from './schema.ts';
 import CustomFormControlInput from '../CustomFormControlInput';
 import MyDocument from '../InvoiceReciepment';
+import LoadingButton from '@mui/lab/LoadingButton';
 
 const style = {
     position: 'absolute',
@@ -40,68 +40,70 @@ const buttonStyle = {
     backgroundColor: 'primary',
     marginRight: '10px',
 };
-export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
+export function ModalConfirmRequest({ isOpen, setIsOpen, id, callBack }) {
     const {
         register,
-        handleSubmit,
         formState: { errors },
-        control,
-        watch,
-        setError,
-        getValues,
-        setValue,
-        clearErrors,
     } = useForm({
         resolver: zodResolver(OrderSchema),
     });
     const [partNumber, setPartNumber] = useState([{}])
+    const [isLoading, setIsLoading] = useState(false)
 
     const { addToast } = Toast()
 
-    const navigate = useNavigate()
-    const quantity = watch("quantity")
-    const price = watch("price")
+
     const [rows, setRows] = useState([{
         quantityGiven: []
     }])
-    const [numberSeries, setNumberSeries] = useState("0")
+    const [_, setNumberSeries] = useState("0")
 
     const { userData } = useContext(AppContext)
 
     const handleAcceptRequest = async () => {
+        setIsLoading(true)
 
-        for (let i = 0; i < rows.length; i++) {
-            if (rows[i].quantity < rows[i]?.quantityGiven[rows[i]?.quantityGiven?.length - 1] || rows[i]?.quantityGiven?.length <= 0) {
-                addToast({
-                    title: `A quantidade fornecida é obrigatória e não pode ser  maior que a quantidade requisitada para a peça "${rows[i].piece.label}"`,
-                    status: "warning"
-                })
-                return;
+        try {
+
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].quantity < rows[i]?.quantityGiven || rows[i]?.quantityGiven?.length <= 0) {
+                    addToast({
+                        title: `A quantidade fornecida é obrigatória e não pode ser  maior que a quantidade requisitada para a peça "${rows[i].piece.label}"`,
+                        status: "warning"
+                    })
+                    setIsLoading(false)
+
+                    return;
+                }
             }
-        }
 
-        const requestData = rows.map(row => ({
-            number_series: row.numberSeries,
-            pieceId: row.piece.value,
-            quantityGiven: row.quantityGiven[0]
-        }))
+            const requestData = rows.map(row => ({
+                number_series: row.numberSeries,
+                pieceWarehouseId: row.piece.value,
+                quantityGiven: row.quantityGiven
+            }))
 
-        const url = `/request/accept-request/${id}`;
-        const response = await api.post(url, {
-            pieceData: requestData,
-            userId: userData.data.id
-        })
-        if (response.status === 201) {
-            addToast({
-                title: "Requisição aceite com sucesso",
-                status: "success"
+            const url = `/request/accept-request/${id}`;
+            const response = await api.post(url, {
+                pieceData: requestData,
+                userId: userData.data.id
             })
-            MyDocument(response.data)
+            if (response.status === 201) {
+                addToast({
+                    title: "Requisição aceite com sucesso",
+                    status: "success"
+                })
+                MyDocument(response.data)
+                setIsOpen(false)
+
+            }
             setIsOpen(false)
+            setIsLoading(false)
+            callBack()
+        } catch (e) {
 
+            setIsLoading(false)
         }
-
-        window.location.reload()
 
     }
 
@@ -112,15 +114,17 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
             if (response.status !== 200) {
                 console.log(response)
             }
+            console.log("DATA DATA", response.data)
+
             setRows(response.data?.RequestsPieces?.map(row => ({
                 piece: {
-                    value: row.pieceId,
-                    label: row.piece.name,
-                    location: row.piece.locationInWarehouse,
-                    quantity: row.piece.quantity,
+                    value: row.id,
+                    label: row.name,
+                    location: row.locationInWarehouse,
+                    quantity: row.quantityInStock,
                 },
-                quantity: row.quantity,
-                price: row.piece.price,
+                quantity: row.quantityRequested,
+                price: row.price,
                 numberSeries: [],
                 quantityGiven: []
             })))
@@ -155,9 +159,10 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id }) {
                         setNumberSeries={setNumberSeries}
                     />
                     <Box>
-                        <Button onClick={handleAcceptRequest} variant="contained" sx={buttonStyle}>
+                        <Button onClick={handleAcceptRequest} disabled={isLoading} variant="contained" sx={buttonStyle}>
                             Confirmar
                         </Button>
+
                         <Button onClick={handleClose} variant="contained" sx={buttonStyle}>
                             Voltar
                         </Button>

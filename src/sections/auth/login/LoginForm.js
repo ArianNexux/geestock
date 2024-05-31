@@ -43,7 +43,7 @@ export default function LoginForm() {
         navigate('/dashboard', { replace: true });
       } else {
         addToast({
-          title: "Combinação Senha e email incorreta",
+          title: "Combinação Senha e email incorreta ou Contacte o administrador verificando se os seus armazéns estão activos",
           status: "warning"
         })
       }

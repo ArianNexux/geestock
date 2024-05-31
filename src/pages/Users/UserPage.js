@@ -24,9 +24,21 @@ import {
   TablePagination,
   TextField
 } from '@mui/material';
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  AlertDialogCloseButton,
+} from '@chakra-ui/react'
+import { Toast } from '../../components/Toast';
+
 // components
 import Label from '../../components/label/Label';
 import Iconify from '../../components/iconify';
+
 import Scrollbar from '../../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
@@ -78,11 +90,13 @@ function applySortFilter(array, comparator, query) {
 
 export default function UserPage() {
   const [open, setOpen] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
   const [data, setData] = useState([]);
 
   const [order, setOrder] = useState('asc');
+  const { addToast } = Toast()
 
   const [selected, setSelected] = useState([]);
 
@@ -199,6 +213,14 @@ export default function UserPage() {
       console.log(e)
     }
   }
+  const handleResetPassword = async () => {
+    const url = `users/reset-password/${actualId}`;
+    await api.put(url)
+    addToast({
+      title: "Senha resetada com sucesso",
+      status: "success"
+    })
+  }
 
   const handleChangeStatus = async (e) => {
     try {
@@ -262,7 +284,7 @@ export default function UserPage() {
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
 
 
-                        <TableCell component="th" scope="row" padding="none">
+                        <TableCell component="th" scope="row">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             {
                               /* <Avatar alt={name} src={avatarUrl} /> */
@@ -328,13 +350,14 @@ export default function UserPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={data.length}
+            labelRowsPerPage={"Linhas por página"}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
-        </Card>
+        </Card >
       </Container >
 
       <Popover
@@ -364,7 +387,14 @@ export default function UserPage() {
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           {!status ? 'Activar' : 'Desactivar'}
         </MenuItem>
+
+        <MenuItem onClick={() => { handleResetPassword() }} >
+          <Iconify icon="icon-park-outline:change" style={{ color: 'black', marginRight: '2px', width: '65px' }} />
+          Resetar senha
+        </MenuItem>
       </Popover>
+
+
     </>
   );
 }

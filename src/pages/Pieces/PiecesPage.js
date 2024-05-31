@@ -40,7 +40,7 @@ const TABLE_HEAD = [
   { id: 'name', label: 'Nome', alignRight: false },
   { id: 'partNumber', label: 'PN', alignRight: false },
   { id: 'quantity', label: 'Quantidade', alignRight: false },
-  { id: 'price', label: 'Preço', alignRight: false },
+  { id: 'price', label: 'Preço Médio', alignRight: false },
   { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
@@ -93,12 +93,15 @@ export default function PiecesPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [actualId, setActualId] = useState(0);
+  const [pieceWarehouseId, setPieceWarehouseId] = useState(0);
+  const [locationInWarehouseData, setLocationInWarehouseData] = useState("");
 
-  const handleOpenMenu = (event, id, isActive) => {
+  const handleOpenMenu = (event, id, isActive, pieceWarehouseId, locationInWarehouse) => {
     setActualId(id)
     setOpen(event.currentTarget);
     setStatus(isActive);
-
+    setPieceWarehouseId(pieceWarehouseId)
+    setLocationInWarehouseData(locationInWarehouse)
   };
 
   const handleCloseMenu = () => {
@@ -156,9 +159,6 @@ export default function PiecesPage() {
   const isNotFound = !filteredUsers.length && !!filterName;
   useEffect(() => {
     const getData = async () => {
-
-      console.log("NOTA-SE:", userData)
-      console.log("NOTA-SE ----:", curentWarehouse)
 
       try {
         const url = Number(userData.data?.position) > 1 ? `/piece/warehouse/${curentWarehouse}?onlyActive=${userData.data.position === "1" ? "0" : "1"}` : `/piece?onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
@@ -226,9 +226,9 @@ export default function PiecesPage() {
           <Typography variant="h4" gutterBottom>
             Gestão de Peças
           </Typography>
-          <Button variant="contained" onClick={() => { navigate("/dashboard/peca/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+          {userData.data.position !== "2" && <Button variant="contained" onClick={() => { navigate("/dashboard/peca/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
             Cadastrar Peça
-          </Button>
+          </Button>}
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
@@ -254,7 +254,7 @@ export default function PiecesPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, description, quantity, price, partNumber, isActive } = row;
+                    const { id, name, description, quantity, price, partNumber, isActive, Piece, locationInWarehouse } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -264,7 +264,7 @@ export default function PiecesPage() {
                         </TableCell> */
                         }
 
-                        <TableCell component="th" scope="row" padding="none">
+                        <TableCell align="left" component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" noWrap style={{ textIndent: '20px' }}>
                               {name}
@@ -280,10 +280,15 @@ export default function PiecesPage() {
                         <TableCell align="left">{price}</TableCell>
 
                         <TableCell align="left">
-                          <Label color={isActive ? 'success' : 'error'}>{isActive ? 'Activo' : 'Inactivo'}</Label>
-                        </TableCell>
+                          {
+
+                            userData.data.position === "1" ?
+                              <Label color={isActive ? 'success' : 'error'}>{isActive ? 'Activo' : 'Inactivo'}</Label>
+                              :
+                              <Label color={Piece.isActive ? 'success' : 'error'}>{Piece.isActive ? 'Activo' : 'Inactivo'}</Label>
+                          }</TableCell>
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, isActive) }}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, userData.data.position === "1" ? id : Piece.id, isActive, id, locationInWarehouse) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -328,8 +333,9 @@ export default function PiecesPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={data.length}
             rowsPerPage={rowsPerPage}
+            labelRowsPerPage={"Linhas por página"}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
@@ -353,9 +359,9 @@ export default function PiecesPage() {
             },
           }}
         >
-          <MenuItem onClick={() => { navigate(`/dashboard/peca/editar/${actualId}`) }}>
+          <MenuItem onClick={() => { navigate(`/dashboard/peca/editar/${actualId}?pieceWarehouseId=${pieceWarehouseId}&locationInWarehouse=${locationInWarehouseData}`) }}>
             <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-            Editar
+            {userData.data.position === "1" ? 'Editar' : 'Visualizar'}
           </MenuItem>
 
           {userData.data.position === "1" && <MenuItem onClick={() => { handleChangeStatus() }} >

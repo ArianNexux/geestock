@@ -74,11 +74,11 @@ export default function TableRequestForMe({ rows, hasPrice = false, showInput = 
                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
 
-                            <TableCell component="th" scope="row">
+                            <TableCell sx={{ marginLeft: '10px' }} component="th" scope="row">
                                 {row.piece.label}
                             </TableCell>
                             <TableCell align="center">{row.piece.location}</TableCell>
-                            <TableCell align="center">{row.piece.quantity}</TableCell>
+                            <TableCell align="center">{row.piece.quantity + row.quantity}</TableCell>
                             <TableCell align="center">{row.quantity}</TableCell>
 
                             <TableCell align="center">

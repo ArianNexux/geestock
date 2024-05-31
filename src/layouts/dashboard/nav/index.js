@@ -42,7 +42,7 @@ export default function Nav({ openNav, onCloseNav }) {
   const { pathname } = useLocation();
 
   const isDesktop = useResponsive('up', 'lg');
-  const { userData } = useContext(AppContext)
+  const { userData, curentWarehouse } = useContext(AppContext)
 
   useEffect(() => {
     if (openNav) {
@@ -59,7 +59,7 @@ export default function Nav({ openNav, onCloseNav }) {
       }}
     >
       <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
-        <image src={'../assets/icons/navbar/logo-sonasurf.png'} alt="Logo" />
+        <img src={'../assets/icons/navbar/logo-sonasurf.png'} alt="Logo" />
       </Box>
 
       <Box sx={{ mb: 5, mx: 2.5 }}>
@@ -74,9 +74,7 @@ export default function Nav({ openNav, onCloseNav }) {
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 Nível :  {usersTypes[Number(userData.data.position) - 1].label}
               </Typography>
-              {userData.data.position === "1" && <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Armazém: {userData.data.warehouse.name}
-              </Typography>}
+
             </Box>
           </StyledAccount>
         </Link>
@@ -85,7 +83,7 @@ export default function Nav({ openNav, onCloseNav }) {
       <NavSection data={navConfig} />
 
       <Box sx={{ flexGrow: 1 }} />
-    </Scrollbar>
+    </Scrollbar >
   );
 
   return (

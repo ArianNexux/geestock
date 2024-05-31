@@ -102,12 +102,12 @@ export function ModalInsertPiece({ isOpen, setIsOpen, id, dataPieces, setRows, r
                         hasPrice && (<Box mb={5}>
                             <CustomFormControlInput
                                 errors={errors}
-                                fieldName={`Preço`}
+                                fieldName={`Preço Médio`}
                                 fieldNameObject="price"
                                 isDisabled={false}
                                 register={register}
                                 type="number"
-                                placeholder="Insira p preço da peça aqui..."
+                                placeholder="Insira o preço médio da peça aqui..."
                             />
                         </Box>)
                     }

@@ -1,20 +1,24 @@
+import { Helmet } from 'react-helmet-async';
+
 import { useState, useEffect, useContext } from 'react';
 import Box from '@mui/material/Box';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Stack from '@mui/material/Stack';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Modal from '@mui/material/Modal';
+import Iconify from '../../components/iconify';
 import api from '../../utils/api';
 import { AppContext } from '../../context/context';
 
-import { Toast } from '../Toast';
-import TableRequest from '../TableRequest';
+import { Toast } from '../../components/Toast';
+import TableRequest from '../../components/TableRequest';
 import { OrderSchema } from './schema.ts';
-import CustomFormControlInput from '../CustomFormControlInput';
-import TableConfirmOrder from '../TableConfirmOrder';
+import CustomFormControlInput from '../../components/CustomFormControlInput';
+import TableConfirmOrder from '../../components/TableConfirmOrder';
 
 const style = {
     position: 'absolute',
@@ -40,7 +44,8 @@ const styleChildBox = {
 const buttonStyle = {
     backgroundColor: 'primary',
 };
-export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
+
+export default function ConfirmOrder() {
     const {
         register,
         handleSubmit,
@@ -59,26 +64,33 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
     const navigate = useNavigate()
     const quantity = watch("quantity")
     const price = watch("price")
+    const { id } = useParams()
     const [rows, setRows] = useState([])
+    const [isPartial, setIsPartial] = useState(false)
+    const [isOpen, setIsOpen] = useState(false)
     const [numberSeries, setNumberSeries] = useState("0")
-    const { userData } = useContext(AppContext)
+    const { userData, curentWarehouse } = useContext(AppContext)
     useEffect(() => {
         const getData = async () => {
-            const response = await api.get(`order/${id}`)
+            const response = await api.get(`order/${id}?curentWarehouse=${curentWarehouse.id ?? curentWarehouse}`)
             if (response.status !== 200) {
                 console.log(response)
             }
+            console.log("RETFOP", response.data.OrdersPiece)
             setRows(response.data.OrdersPiece.map(row => ({
                 piece: {
                     value: row.pieceId,
-                    label: row.piece.name
+                    label: row.Piece.name
                 },
                 quantity: row.quantity,
                 price: row.price,
                 numberSeries: [],
                 quantityGiven: 0,
+                locationInWarehouse: row.Piece?.PiecesWarehouse[0]?.locationInWarehouse ?? '',
                 priceBought: []
             })))
+
+
 
         }
         getData()
@@ -99,6 +111,7 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
         }
         setSelected(newSelected);
     };
+    
     const handleOnClick = async () => {
         for (let i = 0; i < rows.length; i++) {
             if (rows[i].quantity < rows[i]?.quantityGiven || rows[i]?.quantityGiven?.length <= 0) {
@@ -108,13 +121,19 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
                 })
                 return;
             }
+            if (rows[i].quantity >= rows[i]?.quantityGiven && !isPartial) {
+                setIsPartial(rows[i].quantity >= rows[i]?.quantityGiven)
+            }
+
+
         }
+
         try {
             console.log(rows)
-
             const pieceData = rows.map(row => ({
                 pieceId: row.piece.value,
                 quantity: row.quantityGiven,
+                price: row.price,
                 locationInWarehouse: row.locationInWarehouse
             }))
 
@@ -123,6 +142,8 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
             const response = await api.post(`/order/confirm-order/${id}`, {
                 pieceData,
                 userId: userData.data.id,
+                warehouseId: curentWarehouse.id ?? curentWarehouse,
+                isPartial: !rows.every(row => row.quantityGiven >= row.quantity)
             })
 
             if (response.status === 200 || response.status === 201) {
@@ -140,31 +161,43 @@ export function ModalConfirmOrder({ isOpen, setIsOpen, id }) {
 
 
     }
+
     const handleOpen = () => setIsOpen(true);
     const handleClose = () => setIsOpen(false);
-    return (
-        <div style={{ overflowY: 'scroll' }}>
-            <Modal
-                open={isOpen}
-                onClose={handleClose}
-                aria-labelledby="modal-modal-title"
 
-                aria-describedby="modal-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="modal-modal-title" variant="h6" component="h2">
-                        CONFIRMAÇÃO DE ENCOMENDA
+    return (
+        <>
+            <Helmet>
+                <title> Confirmar Encomendas </title>
+            </Helmet>
+
+            <Container>
+                <Typography variant="p" sx={{ borderBottom: "1px solid black", marginBottom: "10px" }} gutterBottom>
+                    Início {'>'} Encomendas {'>'} Confirmar Encomendas
+                </Typography>
+                <Stack direction="column" mt={3} mb={5}>
+                    <Button onClick={() => { navigate(`/dashboard/encomenda`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
+                        Voltar
+                    </Button>
+                    <Typography variant="h4" mt={3} gutterBottom>
+                        Gestão de Encomendas
                     </Typography>
-                    <TableConfirmOrder
-                        rows={rows}
-                    />
-                    <Box>
-                        <Button onClick={handleOnClick} variant="contained" sx={buttonStyle}>
-                            Confirmar
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
-        </div>
+
+                </Stack>
+                <Stack>
+                    <Typography variant="body2" gutterBottom>Confirmar Encomendas</Typography>
+                </Stack>
+
+                <Typography id="modal-modal-title" variant="h6" component="h2">
+                    CONFIRMAÇÃO DE ENCOMENDA
+                </Typography>
+                <TableConfirmOrder
+                    rows={rows}
+                />
+                <Button onClick={handleOnClick} variant="contained" sx={buttonStyle}>
+                    Confirmar
+                </Button>
+            </Container>
+        </>
     );
 }

@@ -17,7 +17,6 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
     const [selectedRow, setSelectedRow] = useState({})
     const [isOpenModalNumber, setIsOpenModalNumber] = useState(false)
     const [selected, setSelected] = useState([]);
-    const [quantity, setQuantity] = useState(0);
 
     const handleClick = (event, row) => {
         console.log(row, selected);
@@ -25,8 +24,7 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
         let newSelected = [];
         if (selectedIndex === -1) {
             newSelected = newSelected.concat(selected, row);
-            setQuantity(row.quantity)
-
+            row.quantityGiven = row.quantity
         } else if (selectedIndex === 0) {
             newSelected = newSelected.concat(selected.slice(1));
         } else if (selectedIndex === selected.length - 1) {
@@ -47,6 +45,7 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
                         </TableCell>
                         <TableCell>Nome da Peça</TableCell>
                         <TableCell align="center">Quantidade Encomendada</TableCell>
+                        <TableCell align="center">Preço Unitário</TableCell>
                         <TableCell align="center">Localização da Peça</TableCell>
                         <TableCell align="center">Quantidade Recebida</TableCell>
 
@@ -77,15 +76,18 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
                                 <TableCell align="center" scope="row">
                                     {row.quantity}
                                 </TableCell>
+                                <TableCell align="center" scope="row">
+                                    {row.price}
+                                </TableCell>
                                 <TableCell align="center">
                                     <Box mb={5}>
                                         <Input
                                             placeholder={"Localização da Peça"}
                                             type="text"
+                                            defaultValue={row.locationInWarehouse}
                                             disabled={selectedUser}
                                             onBlur={(e) => {
-                                                row.locationInWarehouse = []
-                                                row.locationInWarehouse.push(e.target.value);
+                                                row.locationInWarehouse = e.target.value;
                                             }}
                                             sx={{ width: "200px", height: "80px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
                                         />
@@ -98,14 +100,10 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
                                             placeholder={"Insira a quantidade number"}
                                             type="number"
                                             disabled={selectedUser}
-                                            value={quantity}
                                             onChange={(e) => {
-                                                setQuantity(e.target.value)
+                                                row.quantityGiven = Number(e.target.value)
                                             }}
-                                            onBlur={(e) => {
-                                                row.quantityGiven = []
-                                                row.quantityGiven.push(e.target.value);
-                                            }}
+
                                             sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
                                         />
 
@@ -141,12 +139,7 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
                     }
                     )
                     }
-                    <ModalNumberSeries
-                        quantity={selectedRow.quantity}
-                        isOpen={isOpenModalNumber}
-                        setIsOpen={setIsOpenModalNumber}
-                        numberSeries={selectedRow.numberSeries}
-                    />
+
                 </TableBody>
             </Table>
         </TableContainer>

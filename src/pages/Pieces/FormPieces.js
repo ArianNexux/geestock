@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useContext, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 // @mui
 import {
     Card,
@@ -48,6 +48,7 @@ export default function FormPieces() {
     });
     const { addToast } = Toast()
 
+    const locationToUpdate = watch("location")
     const warehouseId = watch("warehouseId")
     const transportId = watch("transportId")
     const categoryId = watch("categoryId")
@@ -61,9 +62,14 @@ export default function FormPieces() {
     const [warehouseData, setWarehouseData] = useState([])
     const [isActive, setIsActive] = useState(true)
     const { id } = useParams()
+    const [params, setParams] = useSearchParams()
 
     useEffect(() => {
 
+        if (userData.data.position === "2") {
+            console.log("Location", params.get("locationInWarehouse"))
+            setValue("location", params.get("locationInWarehouse"))
+        }
         const getData = async () => {
             const responseCategories = await api.get(GET_CATEGORY)
             const responseSubcategories = await api.get(GET_SUBCATEGORY)
@@ -93,29 +99,28 @@ export default function FormPieces() {
 
             if (Number(userData.data.position) > 1) {
                 const foundWarehouse = userData.data.warehouse.filter(warehouse => warehouse.id === curentWarehouse)
-                console.log("WAREHOUSE ACTUAL", foundWarehouse, curentWarehouse, userData.data.warehouse)
                 setValue("warehouseId", { label: foundWarehouse[0].name, value: foundWarehouse[0].id })
-
             }
         }
         const fullFillFormData = async (data) => {
             const url = `/piece/${id}`
-            const response = await api.get(url)
-            console.log("FINAL RESPONSE", response.data)
-            setValue("name", response.data.name)
-            setValue("description", response.data.description)
-            setValue("locationInWarehouse", response.data.locationInWarehouse ?? "")
-            setValue("partNumber", response.data.partNumber)
-            setValue("price", response.data.price.toString())
-            setValue("brand_name", response.data.brand_name)
-            setValue("supplierId", { value: response.data.supplier.id, label: response.data.supplier.name })
-            setValue("categoryId", { value: response.data.category.id, label: response.data.category.name })
-            setValue("warehouseId", { value: response.data?.warehouse.id, label: response.data?.warehouse.name })
-            setValue("subCategoryId", { value: response.data.subcategory.id, label: response.data.subcategory.name })
-            setValue("quantity", response.data.quantity.toString())
-            setValue("target", response.data.target.toString())
-            setValue("min", response.data.min.toString())
-            setIsActive(response.data.isActive)
+            // eslint-ignore-nextline
+            const newData = await api.get(`/piece/${id}`)
+            console.log("FINAL RESPONSE 01", newData)
+            setValue("name", newData.data.name)
+            setValue("description", newData.data.description)
+            setValue("locationInWarehouse", newData.data.locationInWarehouse ?? "")
+            setValue("partNumber", newData.data.partNumber)
+            setValue("price", newData.data.price?.toString())
+            setValue("brand_name", newData.data.brand_name)
+            setValue("supplierId", { value: newData.data.supplier.id, label: newData.data.supplier.name })
+            setValue("categoryId", { value: newData.data.category.id, label: newData.data.category.name })
+            //setValue("warehouseId", { value: newData.data?.warehouse.id, label: newData.data?.warehouse.name })
+            setValue("subCategoryId", { value: newData.data.subcategory.id, label: newData.data.subcategory.name })
+            //setValue("quantity", newData.data.quantity.toString())
+            setValue("target", newData.data.target.toString())
+            setValue("min", newData.data.min.toString())
+            setIsActive(newData.data.isActive)
         }
 
         fullFillFormData()
@@ -126,19 +131,29 @@ export default function FormPieces() {
 
     const onSubmit = async (data) => {
         console.log(errors)
+
         try {
+
+            if (userData.data.position === "2") {
+                let response = await api.put(`/piece/update-location/${params.get("pieceWarehouseId")} `, {
+                    location: locationToUpdate
+                })
+                addToast({
+                    title: "Localização da peça actualizada com sucesso",
+                    status: "success"
+                })
+                navigate("/dashboard/peca")
+                return;
+            }
             console.log(id)
             let response;
-            const url = id === undefined ? `piece` : `/piece/${id}`
+            const url = id === undefined ? `piece` : `/piece/${id} `
 
             const dataRequest = {
                 ...data,
-
-                price: Number(data.price),
                 quantity: Number(data.quantity),
                 target: Number(data.target),
                 min: Number(data.min),
-                warehouseId: warehouseId.value,
                 supplierId: supplierId.value,
                 categoryId: categoryId.value,
                 subCategoryId: subCategoryId.value,
@@ -182,7 +197,7 @@ export default function FormPieces() {
                 Início > Peças > Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
-                    <Button onClick={() => { navigate(`/dashboard/peca`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
+                    <Button onClick={() => { navigate(`/ dashboard / peca`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>
@@ -200,19 +215,28 @@ export default function FormPieces() {
                                 errors={errors}
                                 fieldName="Peça"
                                 fieldNameObject="name"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "2"}
                                 register={register}
                                 type="text"
                                 placeholder="Insira o nome da Peça"
                             />
                         </Box>
-
+                        {userData.data.position === "2" && <Box mb={5}>
+                            <CustomFormControlTextArea
+                                errors={errors}
+                                fieldName="Localização da Peça"
+                                fieldNameObject="location"
+                                register={register}
+                                isRequired={false}
+                                placeholder="Localização da Peça"
+                            />
+                        </Box>}
                         <Box mb={5}>
                             <CustomFormControlTextArea
                                 errors={errors}
                                 fieldName="Descrição"
                                 fieldNameObject="description"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "2"}
                                 register={register}
                                 isRequired={false}
                                 placeholder="Descrição"
@@ -223,57 +247,39 @@ export default function FormPieces() {
                                 errors={errors}
                                 fieldName="Part Number"
                                 fieldNameObject="partNumber"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "2"}
                                 register={register}
                                 isRequired
                                 type="text"
                                 placeholder="Insira o Part Number"
                             />
                         </Box>
-                        <Box mb={5}>
-                            <CustomFormControlSelect
-                                errors={errors}
-                                fieldName="Armazém"
-                                fieldNameObject="warehouseId"
-                                isDisabled={Number(userData.data.position) > 1}
-                                parent={{ value: 1 }}
-                                options={warehouseData}
-                                control={control}
-                                isMulti={false}
-                                isRequired
-                            />
-                        </Box>
-                        <Box mb={5}>
-                            <CustomFormControlTextArea
-                                errors={errors}
-                                fieldName="Localização da Peça no armazém"
-                                fieldNameObject="locationInWarehouse"
-                                isDisabled={userData.data.position === "1"}
-                                register={register}
-                                isRequired={false}
-                                placeholder="Breve descrição da Localização da Peça"
-                            />
-                        </Box>
-                        <Box mb={5}>
-                            <CustomFormControlInput
-                                errors={errors}
-                                fieldName="Preço"
-                                fieldNameObject="price"
-                                isDisabled={id !== undefined}
-                                register={register}
-                                isRequired
-                                type="number"
-                                placeholder="Insira o preço aqui"
-                            />
-                        </Box>
+                        {
+                            id !== undefined &&
+                            (<Box mb={5}>
+                                <CustomFormControlInput
+                                    errors={errors}
+                                    fieldName="Preço Médio"
+                                    fieldNameObject="price"
+                                    isDisabled={true}
+                                    defaultValue={0}
+                                    register={register}
+                                    isRequired={false}
+                                    type="number"
+                                    placeholder="Insira o preço aqui"
+                                />
+                            </Box>)
+                        }
                         <Box mb={5}>
                             <CustomFormControlInput
                                 errors={errors}
                                 fieldName="Marca"
                                 fieldNameObject="brand_name"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "2"}
                                 register={register}
                                 isRequired={false}
+                                defaultValue={""}
+
                                 type="text"
                                 placeholder="Insira o nome da marca da peça"
                             />
@@ -283,7 +289,7 @@ export default function FormPieces() {
                             <CustomFormControlSelect
                                 errors={errors}
                                 fieldNameObject="supplierId"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "2"}
                                 parent={{ value: 1 }}
                                 options={supplierData}
                                 fieldName="Fornecedor da Peça"
@@ -299,7 +305,7 @@ export default function FormPieces() {
                             <CustomFormControlSelect
                                 errors={errors}
                                 fieldNameObject="categoryId"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "2"}
                                 parent={{ value: 1 }}
                                 options={categoryData}
                                 fieldName="Categoria"
@@ -311,7 +317,7 @@ export default function FormPieces() {
                             <CustomFormControlSelect
                                 errors={errors}
                                 fieldNameObject="subCategoryId"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "2"}
                                 parent={{ value: 1 }}
                                 options={subCategoryData}
 
@@ -321,25 +327,12 @@ export default function FormPieces() {
                             />
                         </Box>
 
-
-                        <Box mb={5}>
-                            <CustomFormControlInput
-                                errors={errors}
-                                fieldName="Quantidade"
-                                fieldNameObject="quantity"
-                                isDisabled={id !== undefined}
-                                register={register}
-                                isRequired={false}
-                                type="text"
-                                placeholder="Insira a quantidade de peças"
-                            />
-                        </Box>
                         <Box mb={5}>
                             <CustomFormControlInput
                                 errors={errors}
                                 fieldName="Target"
                                 fieldNameObject="target"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "2"}
                                 register={register}
                                 isRequired={false}
                                 type="text"
@@ -351,7 +344,7 @@ export default function FormPieces() {
                                 errors={errors}
                                 fieldName="Quantidade Mínima"
                                 fieldNameObject="min"
-                                isDisabled={false}
+                                isDisabled={userData.data.position === "2"}
                                 register={register}
                                 isRequired={false}
                                 type="text"

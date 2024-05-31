@@ -46,17 +46,23 @@ export default function Header({ onOpenNav }) {
   const { userData, setCurentWarehouse, curentWarehouse } = useContext(AppContext)
   const [stateOrder, setStateOrder] = useState({})
   const [data, setData] = useState([])
+  const [warehouseData, setDataWarehouse] = useState([]);
 
   const [search, setSearch] = useState("")
-
-  useEffect(() => {
+  const getData = async () => {
     if (userData.data.position !== "1") {
-      setStateOrder(userData.data.warehouse[0]?.id)
       setCurentWarehouse(userData.data.warehouse[0]?.id)
+    } else {
+      const responseWarehouse = await api.get("/warehouse?onlyActive=1")
+      setDataWarehouse(responseWarehouse.data)
+      setCurentWarehouse("Todos")
     }
+    setStateOrder("Todos")
+  }
+  useEffect(() => {
+    getData()
   }, [])
   const handleChange = async (e) => {
-    console.log("VALUE OF", e)
     setStateOrder(e.target.value)
     setCurentWarehouse(e.target.value ?? curentWarehouse)
   }
@@ -78,7 +84,7 @@ export default function Header({ onOpenNav }) {
         <Searchbar />
 
         <Box sx={{ flexGrow: 1 }} />
-        {userData.data?.position !== "1" && <Box sx={{ width: '400px' }}>
+        {userData.data?.position !== "3" && <Box sx={{ width: '400px' }}>
           <FormControl variant="standard" sx={{ m: 1, minWidth: '100%', marginRight: '20px' }}>
             <InputLabel id="demo-simple-select-standard-label">Armazem Selecionado</InputLabel>
             <Select
@@ -88,10 +94,16 @@ export default function Header({ onOpenNav }) {
               label="Armazem Selecionado"
               onChange={handleChange}
             >
+              {userData.data?.position === "1" && <MenuItem value="Todos">Todos</MenuItem>}
               {
-                userData.data.warehouse.map(e => (
-                  <MenuItem value={e.id}>{e.name}</MenuItem>
-                ))
+                userData.data?.position !== "1" ?
+                  userData.data.warehouse.map(e => (
+                    <MenuItem value={e.id}>{e.name}</MenuItem>
+                  ))
+                  :
+                  warehouseData.map(e => (
+                    <MenuItem value={e.id}>{e.name}</MenuItem>
+                  ))
               }
 
             </Select>

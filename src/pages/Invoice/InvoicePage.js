@@ -244,7 +244,7 @@ export default function InvoicePage() {
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
 
 
-                        <TableCell component="th" scope="row" padding="none">
+                        <TableCell component="th" scope="row">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Typography variant="subtitle2" noWrap>
                               {name}

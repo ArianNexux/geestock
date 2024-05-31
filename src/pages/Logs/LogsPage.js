@@ -37,7 +37,7 @@ import api from '../../utils/api';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Usuário', alignRight: false },
+  { id: 'name', label: 'Utilizador', alignRight: false },
   { id: 'description', label: 'Descrição', alignRight: false },
   { id: 'created_at', label: 'Data e Hora', alignRight: false },
   { id: '' },
@@ -210,7 +210,7 @@ export default function LogsPage() {
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
 
 
-                        <TableCell component="th" scope="row" padding="none">
+                        <TableCell component="th" scope="row">
                           <Stack direction="row" alignItems="center" spacing={2}>
 
                             <Typography variant="subtitle2" noWrap>
@@ -263,8 +263,9 @@ export default function LogsPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={data.length}
             rowsPerPage={rowsPerPage}
+            labelRowsPerPage={"Linhas por página"}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}

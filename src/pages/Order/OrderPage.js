@@ -38,6 +38,7 @@ import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 import USERLIST from '../../_mock/user';
 import api from '../../utils/api';
 import { AppContext } from '../../context/context';
+import MyOrderNote from 'src/components/InvoiceReciepment/order-note';
 // ----------------------------------------------------------------------
 const TABLE_HEAD = [
   { id: 'description', label: 'Nome', alignRight: false },
@@ -82,7 +83,8 @@ export default function OrderPage() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
-  const { userData } = useContext(AppContext)
+  const [actualState, setActualState] = useState("Em curso");
+  const { userData, curentWarehouse } = useContext(AppContext)
   const [order, setOrder] = useState('asc');
 
   const [selected, setSelected] = useState([]);
@@ -95,9 +97,11 @@ export default function OrderPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [isOpen, setIsOpen] = useState(false);
   const [id, setId] = useState(0);
-  const handleOpenMenu = (event, id) => {
+  const handleOpenMenu = (event, id, state) => {
     setOpen(event.currentTarget);
     setActualId(id)
+    setActualState(state);
+    setId(id);
 
   };
 
@@ -109,7 +113,8 @@ export default function OrderPage() {
     const getData = async () => {
       try {
         if (search.length <= 1) {
-          const url = `/order`;
+          console.log("WAREHOUSE ID", curentWarehouse)
+          const url = userData.data.position === "1" ? `/order` : `/order?warehouseId=${curentWarehouse.id ?? curentWarehouse}`;
           const response = await api.get(url)
           setData(response.data)
         }
@@ -118,7 +123,7 @@ export default function OrderPage() {
       }
     }
     getData()
-  }, [search])
+  }, [search, curentWarehouse])
   const handleSearch = async () => {
     try {
 
@@ -134,7 +139,7 @@ export default function OrderPage() {
   const handleChange = async (e) => {
     setStateOrder(e.target.value)
     try {
-      const url = e.target.value === "Todos" ? "/order" : `/order?searchParam=${e.target.value}`
+      const url = e.target.value === "Todos" ? "/order" : `/order?state=${e.target.value}`
       const response = await api.get(url)
       setData(response.data)
       console.log(response.data)
@@ -156,6 +161,12 @@ export default function OrderPage() {
     }
     setSelected([]);
   };
+
+  const handleGenerateInvoiceOrder = async () => {
+    const url = `/order/${actualId}`
+    const response = await api.get(url)
+    MyOrderNote(response.data)
+  }
 
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
@@ -194,7 +205,8 @@ export default function OrderPage() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await api.get("/order")
+        const url = userData.data.position === "1" ? `/order` : `/order?warehouseId=${curentWarehouse.id ?? curentWarehouse}`;
+        const response = await api.get(url)
         setData(response.data)
         console.log(response.data)
       } catch (e) {
@@ -203,6 +215,20 @@ export default function OrderPage() {
     }
     getData()
   }, [])
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const url = userData.data.position === "1" ? `/order` : `/order?warehouseId=${curentWarehouse.id ?? curentWarehouse}`;
+        const response = await api.get(url)
+        setData(response.data)
+        console.log(response.data)
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    getData()
+  }, [curentWarehouse])
   return (
     <>
       <Helmet>
@@ -236,6 +262,7 @@ export default function OrderPage() {
               <MenuItem value={'Todos'}>Todos</MenuItem>
               <MenuItem value={'Em Curso'}>Em Curso</MenuItem>
               <MenuItem value={'Finalizada'}>Finalizada</MenuItem>
+              <MenuItem value={'Finalizada Parcialmente'}> Finalizada Parcialmente </MenuItem>
             </Select>
           </FormControl>
           <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo BL/AWB ou Descrição da Encomenda" type="email" sx={{ minWidth: "50%" }} />
@@ -274,12 +301,10 @@ export default function OrderPage() {
                         <TableCell align="left">{reference}</TableCell>
 
                         <TableCell align="left">
-                          <Button disabled={state !== "Em curso"} onClick={() => { setIsOpen(true); setId(id) }} sx={{ maxWidth: "40%", height: "40px" }} mb={5} variant="contained">
-                            Confirmar
-                          </Button>
+                          <Label color={state === 'Finalizada' ? 'info' : state.toLowerCase() === 'finalizada parcialmente' ? 'warning' : state.toLowerCase() === 'rejeitada' ? 'error' : 'success'}>{sentenceCase(state)}</Label>
                         </TableCell>
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id) }}>
+                          <IconButton size="large" color="inherit" onClick={(e) => { handleOpenMenu(e, id, state) }}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -324,8 +349,9 @@ export default function OrderPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
             rowsPerPage={rowsPerPage}
+            count={data.length}
+            labelRowsPerPage={"Linhas por página"}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
@@ -353,11 +379,14 @@ export default function OrderPage() {
             <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
             Ver mais
           </MenuItem>
-
-          <MenuItem sx={{ color: 'error.main' }}>
-            <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-            Eliminar
+          <MenuItem onClick={() => { handleGenerateInvoiceOrder() }}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Imprimir
           </MenuItem>
+          {userData.data.position === "2" && !actualState.toLowerCase().includes("finalizada") && <MenuItem onClick={() => { navigate(`/dashboard/confirmar-encomenda/${id}`) }}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Confirmar
+          </MenuItem>}
         </Popover>
       </Container >
 

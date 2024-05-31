@@ -24,11 +24,12 @@ import CustomFormControlSelect from '../../components/CustomFormControlSelect';
 import CustomFormControlInput from '../../components/CustomFormControlInput';
 // components
 import Iconify from '../../components/iconify';
-import { UserSchema } from './schema.ts';
+import { UserPasswordSchema, UserSchema } from './schema.ts';
 import { Toast } from '../../components/Toast';
 import api from '../../utils/api';
 
 export default function FormUser() {
+    const { type, id } = useParams()
 
     const {
         register,
@@ -41,7 +42,7 @@ export default function FormUser() {
         setValue,
         clearErrors,
     } = useForm({
-        resolver: zodResolver(UserSchema),
+        resolver: zodResolver(type !== undefined ? UserPasswordSchema : UserSchema),
     });
 
 
@@ -55,7 +56,6 @@ export default function FormUser() {
     const [warehouseData, setWarehouseData] = useState([])
     const warehouse = watch("warehouseId")
     const position = watch("position")
-    const { type, id } = useParams()
 
 
     useEffect(() => {
@@ -128,10 +128,12 @@ export default function FormUser() {
                             title: "Senha actualizada com sucesso",
                             status: "success"
                         })
+                        navigate("/dashboard/app")
+
                     } else {
 
                         addToast({
-                            title: "Usuário cadastrado com sucesso",
+                            title: "Utilizador cadastrado com sucesso",
                             status: "success"
                         })
                         navigate("/dashboard/usuario")
@@ -198,7 +200,7 @@ export default function FormUser() {
                         <Box mb={5}>
                             <CustomFormControlSelect
                                 errors={errors}
-                                fieldName="Tipo de Usuário"
+                                fieldName="Tipo de Utilizador"
                                 fieldNameObject="position"
                                 isDisabled={type !== undefined}
                                 parent={{ value: 1 }}

@@ -14,6 +14,7 @@ function getCurrentDateTime() {
     let formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
     return formattedDate;
 }
+
 // Create styles
 const styles = StyleSheet.create({
     page: {
@@ -28,7 +29,7 @@ const styles = StyleSheet.create({
 });
 
 // Create Document Component
-const MyDocument = (data) => {
+const MyOrderNote = (data) => {
     const docDefinition = {
         content: [
             {
@@ -48,13 +49,11 @@ const MyDocument = (data) => {
                     {
                         text: [
                             {
-                                text: "\tNota de Entrega - GESSTOCK", style: 'header', margin: [50, 5, 50, 5],
+                                text: "\tInformações da Encomenda - " + data.reference, style: 'header', margin: [50, 5, 50, 5],
                             },
                             { text: '\n' },
                             { text: '\n' },
-                            { text: 'Recibo Por:\n', margin: [0, 5, 0, 5] },
                             { text: '\n' },
-                            { text: 'Entregue Por:\n', margin: [0, 5, 0, 5] },
                         ],
                     },
                 ],
@@ -101,19 +100,19 @@ const MyDocument = (data) => {
                     body: [
                         [
                             {
-                                text: 'Armazem Origem',
+                                text: 'Nome da Encomenda',
                                 bold: true,
                                 fillColor: '#C8C8C8',
                                 style: 'anotherStyle',
                             },
                             {
-                                text: 'Armazem Destino',
+                                text: 'BL/AWB',
                                 bold: true,
                                 fillColor: '#C8C8C8',
                                 style: 'anotherStyle',
                             },
                             {
-                                text: 'Número PR',
+                                text: 'Nº DA ENCOMENDA',
                                 bold: true,
                                 fillColor: '#C8C8C8',
                                 style: 'anotherStyle',
@@ -126,13 +125,11 @@ const MyDocument = (data) => {
                             }
                         ],
                         [
-                            { text: data.warehouseOutcomming, style: 'cellStyle' },
-                            { text: data.warehouseIncomming, style: 'cellStyle' },
-                            { text: data.numberPr, style: 'cellStyle' },
+                            { text: data.description, style: 'cellStyle' },
+                            { text: data.imbl_awb, style: 'cellStyle' },
+                            { text: data.number_order, style: 'cellStyle' },
                             { text: getCurrentDateTime(), style: 'cellStyle' },
-                        ]
-                        ,
-
+                        ],
                     ],
                     styles: {
                         header: {
@@ -196,7 +193,7 @@ const MyDocument = (data) => {
                         ]
                     },
                     headerRows: 1,
-                    widths: ['*', 'auto', 100, '*', '*'],
+                    widths: ['*', 'auto', 100, '*', '*', '*'],
                     body: [
                         [
                             {
@@ -206,7 +203,7 @@ const MyDocument = (data) => {
                                 style: 'anotherStyle',
                             },
                             {
-                                text: 'Descrição',
+                                text: 'Localização da Peça',
                                 bold: true,
                                 fillColor: '#C8C8C8',
                                 style: 'anotherStyle',
@@ -218,25 +215,32 @@ const MyDocument = (data) => {
                                 style: 'anotherStyle',
                             },
                             {
-                                text: 'Quantitidade',
+                                text: 'Quantidade',
                                 bold: true,
                                 fillColor: '#C8C8C8',
                                 style: 'anotherStyle',
                             },
                             {
-                                text: 'Nº de Série',
+                                text: 'Quantidade Recebida',
+                                bold: true,
+                                fillColor: '#C8C8C8',
+                                style: 'anotherStyle',
+                            },
+                            {
+                                text: 'Quantidade em Falta',
                                 bold: true,
                                 fillColor: '#C8C8C8',
                                 style: 'anotherStyle',
                             }
                         ],
-                        ...data.returnmentData.map(e => {
+                        ...data.OrdersPiece.map(e => {
                             return ([
-                                { text: e.pieceName, style: 'cellStyle' },
-                                { text: e.description, style: 'cellStyle' },
-                                { text: e.partNumber, style: 'cellStyle' },
+                                { text: e.Piece.name, style: 'cellStyle' },
+                                { text: e.Piece?.PiecesWarehouse[0]?.locationInWarehouse, style: 'cellStyle' },
+                                { text: e.Piece.partNumber, style: 'cellStyle' },
                                 { text: e.quantity, style: 'cellStyle' },
-                                { text: e.numberSeries, style: 'cellStyle' },
+                                { text: e.quantityGiven, style: 'cellStyle' },
+                                { text: Number(e.quantity) - Number(e.quantityGiven), style: 'cellStyle' },
                             ])
                         }),
 
@@ -273,4 +277,4 @@ const MyDocument = (data) => {
     )
 };
 
-export default MyDocument
+export default MyOrderNote
