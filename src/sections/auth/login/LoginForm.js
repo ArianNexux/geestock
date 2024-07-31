@@ -6,12 +6,12 @@ import { LoadingButton } from '@mui/lab';
 // components
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import api from '../../../utils/api';
 import { AUTH_LOGIN } from '../../../utils/endpoints';
 import { LoginSchema } from './schema.ts';
 import { AppContext, AuthContext } from '../../../context/context';
 import Iconify from '../../../components/iconify';
 import { Toast } from '../../../components/Toast';
+import axios from 'axios'
 // ----------------------------------------------------------------------
 export default function LoginForm() {
 
@@ -22,6 +22,7 @@ export default function LoginForm() {
     control,
     watch,
     setError,
+    getFieldState,
     getValues,
     setValue,
     clearErrors,
@@ -32,10 +33,30 @@ export default function LoginForm() {
   const { addToast } = Toast()
   const [showPassword, setShowPassword] = useState(false);
   const { setUserData } = useContext(AppContext)
+
+  const showErrorInInvalidField = (fieldName, showFieldName) => {
+
+    if (getFieldState(fieldName).invalid) {
+      return <p style={{ color: 'red' }}>Insira uma {showFieldName} válida</p>
+    }
+  }
   const onSubmit = async (data) => {
     try {
+      console.log("COMBI: ", data);
+      /*if () {
+        addToast({
+          title: "Insira um utilizador válido",
+          status: "warning"
+        })
+      }
 
-      const response = await api.post(AUTH_LOGIN, data)
+      if () {
+        addToast({
+          title: "Insira uma palavra-passe válida",
+          status: "warning"
+        })
+      }*/
+      const response = await axios.post(process.env.REACT_APP_API_URL_DEV + AUTH_LOGIN, data)
       if (response.status === 200 && response.data?.access_token) {
         setUserData(response.data)
         localStorage.setItem('userData', JSON.stringify(response.data))
@@ -60,7 +81,7 @@ export default function LoginForm() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={3}>
           <TextField {...register("email")} name="email" label="Email" />
-
+          {showErrorInInvalidField("email", "E-mail")}
           <TextField
             name="password"
             label="Senha"
@@ -76,6 +97,9 @@ export default function LoginForm() {
               ),
             }}
           />
+          {showErrorInInvalidField("password", "Senha")}
+
+
         </Stack>
 
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>

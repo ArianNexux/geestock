@@ -22,6 +22,7 @@ import {
   Typography,
   IconButton,
   FormControl,
+  Box,
   InputLabel,
   TableContainer,
   TablePagination,
@@ -249,26 +250,32 @@ export default function OrderPage() {
         </Stack>
 
 
-        <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
-          <FormControl variant="standard" sx={{ m: 1, minWidth: '40%', marginRight: '50px' }}>
-            <InputLabel id="demo-simple-select-standard-label">Estado da Encomenda</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={stateOrder}
-              label="Estado da Encomenda"
-              onChange={handleChange}
-            >
-              <MenuItem value={'Todos'}>Todos</MenuItem>
-              <MenuItem value={'Em Curso'}>Em Curso</MenuItem>
-              <MenuItem value={'Finalizada'}>Finalizada</MenuItem>
-              <MenuItem value={'Finalizada Parcialmente'}> Finalizada Parcialmente </MenuItem>
-            </Select>
-          </FormControl>
-          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo BL/AWB ou Descrição da Encomenda" type="email" sx={{ minWidth: "50%" }} />
-          <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
-            Pesquisar
-          </Button>
+        <Stack direction="row" sx={{ width: '100%', justifyContent: "space-between", alignItems: 'center', alignContent: "center", marginBottom: "50px" }} >
+          <Box sx={{ minWidth: '50%' }}>
+
+            <FormControl variant="standard" sx={{ m: 1, width: '90%', marginRight: '50px' }}>
+              <InputLabel id="demo-simple-select-standard-label">Estado da Encomenda</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={stateOrder}
+                label="Estado da Encomenda"
+                onChange={handleChange}
+              >
+                <MenuItem value={'Todos'}>Todos</MenuItem>
+                <MenuItem value={'Em Curso'}>Em Curso</MenuItem>
+                <MenuItem value={'Finalizada'}>Finalizada</MenuItem>
+                <MenuItem value={'Finalizada Parcialmente'}> Finalizada Parcialmente </MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box sx={{ minWidth: '60%' }}>
+            <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo BL/AWB ou Descrição da Encomenda" type="email" sx={{ minWidth: "60%" }} />
+            <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />}>
+              Pesquisar
+            </Button>
+          </Box>
         </Stack>
 
         <Card>

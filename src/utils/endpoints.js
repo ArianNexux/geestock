@@ -1,4 +1,4 @@
-export const AUTH_LOGIN = '/auth/login';
+export const AUTH_LOGIN = '/api/auth/login';
 export const GET_CATEGORY = '/category';
 export const GET_SUBCATEGORY = '/subcategory';
 export const GET_TRANSPORT = '/transport';

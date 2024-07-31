@@ -323,7 +323,7 @@ export default function DashboardAppPage() {
           </Grid>
 
           <Grid item md={2}>
-            <AppWidgetSummary title="Encomendas" total={dashboard.order} color="warning" icon={'ant-design:windows-filled'} />
+            <AppWidgetSummary title="Encomendas" total={dashboard?.order ?? 0} color="warning" icon={'ant-design:windows-filled'} />
           </Grid>
 
           <Grid item md={3}>
@@ -333,8 +333,8 @@ export default function DashboardAppPage() {
             <AppWidgetSummary title="Valor das Peças" total={new Intl.NumberFormat().format(Math.round(totalPrice))} color="error" icon={'ant-design:bug-filled'} />
           </Grid>
           <Grid item xs={12} md={6} lg={12}>
-            <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "10px" }} >
-              <Box sx={{ m: 1, minWidth: '50%', marginRight: '50px' }}>
+            <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: 'center', alignContent: "center", marginBottom: "10px" }} >
+              <Box sx={{ m: 1, minWidth: '40%', marginRight: '20px' }}>
 
                 <CustomFormControlSelect
 
@@ -357,10 +357,12 @@ export default function DashboardAppPage() {
                   isSearchable
                 />
               </Box>
-              <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo Part Number ou Nome da Peça" type="email" sx={{ minWidth: "40%" }} />
-              <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
-                Pesquisar
-              </Button>
+              <Box sx={{ width: "450px" }}>
+                <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo Part Number ou Nome da Peça" type="email" sx={{ width: "310px" }} />
+                <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px", padding: '20px' }}>
+                  Pesquisar
+                </Button>
+              </Box>
             </Stack>
             <Card>
 

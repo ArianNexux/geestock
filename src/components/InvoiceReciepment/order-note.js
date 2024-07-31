@@ -3,6 +3,8 @@ import React from 'react';
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from "pdfmake/build/vfs_fonts";
+import * as moment from 'moment';
+
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 function getCurrentDateTime() {
     let currentDate = new Date();
@@ -128,7 +130,7 @@ const MyOrderNote = (data) => {
                             { text: data.description, style: 'cellStyle' },
                             { text: data.imbl_awb, style: 'cellStyle' },
                             { text: data.number_order, style: 'cellStyle' },
-                            { text: getCurrentDateTime(), style: 'cellStyle' },
+                            { text: moment(data.created_at).format("DD/MM/YYYY H:mm"), style: 'cellStyle' },
                         ],
                     ],
                     styles: {

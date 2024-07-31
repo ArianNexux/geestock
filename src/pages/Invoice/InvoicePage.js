@@ -167,6 +167,7 @@ export default function InvoicePage() {
 
   const handleShowDocument = async () => {
     const response = await api.get(`/invoice?requestId=${actualId}`)
+    console.log("MUNDO: ", response.data)
     MyDocument(response.data)
   }
 

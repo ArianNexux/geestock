@@ -3,6 +3,8 @@ import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Toast } from '../../components/Toast'
+
 // @mui
 import {
   Card,
@@ -16,6 +18,8 @@ import {
   TableRow,
   MenuItem,
   TableBody,
+  Box,
+  Modal,
   TableCell,
   Container,
   Typography,
@@ -35,7 +39,7 @@ import USERLIST from '../../_mock/user';
 import api from '../../utils/api';
 import { AppContext } from '../../context/context';
 // ----------------------------------------------------------------------
-
+import axios from 'axios'
 const TABLE_HEAD = [
   { id: 'name', label: 'Nome', alignRight: false },
   { id: 'partNumber', label: 'PN', alignRight: false },
@@ -44,6 +48,18 @@ const TABLE_HEAD = [
   { id: 'status', label: 'Estado', alignRight: false },
   { id: '' },
 ];
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 // ----------------------------------------------------------------------
 
@@ -81,6 +97,7 @@ export default function PiecesPage() {
   const navigate = useNavigate()
   const [page, setPage] = useState(0);
   const { userData, curentWarehouse } = useContext(AppContext)
+  const [file, setFile] = useState(null);
 
   const [order, setOrder] = useState('asc');
 
@@ -95,7 +112,11 @@ export default function PiecesPage() {
   const [actualId, setActualId] = useState(0);
   const [pieceWarehouseId, setPieceWarehouseId] = useState(0);
   const [locationInWarehouseData, setLocationInWarehouseData] = useState("");
+  const [openUpload, setOpenUpload] = useState(false);
+  const { addToast } = Toast()
 
+  const handleOpen = () => setOpenUpload(true);
+  const handleClose = () => setOpenUpload(false);
   const handleOpenMenu = (event, id, isActive, pieceWarehouseId, locationInWarehouse) => {
     setActualId(id)
     setOpen(event.currentTarget);
@@ -113,6 +134,17 @@ export default function PiecesPage() {
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
+  const handleDownloadFiles = async () => {
+    const res = await api.get('/piece/download-excel/' + curentWarehouse)
+    if (res.status === 200) {
+      console.log(res.data.output)
+      window.open("http://192.168.1.5:3001/piece-data.xlsx")
+    }
+  }
+
+  const handleDownloadModel = () => {
+    window.open(process.env.FILES_URL + '/pieces.xlsx')
+  }
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
@@ -157,18 +189,40 @@ export default function PiecesPage() {
   const [data, setData] = useState([])
   const filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
   const isNotFound = !filteredUsers.length && !!filterName;
-  useEffect(() => {
-    const getData = async () => {
 
-      try {
-        const url = Number(userData.data?.position) > 1 ? `/piece/warehouse/${curentWarehouse}?onlyActive=${userData.data.position === "1" ? "0" : "1"}` : `/piece?onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
-        const response = await api.get(url)
-        setData(response.data)
-        console.log(response.data)
-      } catch (e) {
-        console.log(e)
-      }
+  const handleSubmitFile = async () => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const resp = await api.post('/piece/insert-excell', formData, {
+      headers: {
+        "content-type": "multipart/form-data",
+      },
+
+    });
+    if (resp.status === 201) {
+      addToast({
+        title: "Ficheiro carregado com sucesso",
+        status: "success"
+      })
+      getData()
     }
+    setOpenUpload(false)
+
+  };
+
+  const getData = async () => {
+
+    try {
+      const url = Number(userData.data?.position) > 1 ? `/piece/warehouse/${curentWarehouse}?onlyActive=${userData.data.position === "1" ? "0" : "1"}` : `/piece?onlyActive=${userData.data.position === "1" ? "0" : "1"}`;
+      const response = await api.get(url)
+      setData(response.data)
+      console.log(response.data)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  useEffect(() => {
     getData()
   }, [])
   const [search, setSearch] = useState("")
@@ -226,9 +280,15 @@ export default function PiecesPage() {
           <Typography variant="h4" gutterBottom>
             Gestão de Peças
           </Typography>
-          {userData.data.position !== "2" && <Button variant="contained" onClick={() => { navigate("/dashboard/peca/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
-            Cadastrar Peça
-          </Button>}
+          <Box>
+
+            {userData.data.position !== "2" && <Button variant="contained" onClick={() => { navigate("/dashboard/peca/cadastrar") }} startIcon={<Iconify icon="eva:plus-fill" />}>
+              Cadastrar Peça
+            </Button>}
+            <Button style={{ marginLeft: '10px' }} variant="contained" onClick={handleOpen} startIcon={<Iconify icon="eva:upload-fill" />}>
+              Carregar Peças
+            </Button>
+          </Box>
         </Stack>
 
         <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
@@ -369,9 +429,28 @@ export default function PiecesPage() {
             {!status ? 'Activar' : 'Desactivar'}
           </MenuItem>}
         </Popover>
+        <Button style={{ marginTop: '30px' }} variant="contained" onClick={() => { handleDownloadModel() }} startIcon={<Iconify icon="eva:download-fill" />}>
+          Baixar Template
+        </Button>
+        <Button style={{ marginTop: '30px', marginLeft: '10px' }} variant="contained" onClick={() => { handleDownloadFiles() }} startIcon={<Iconify icon="eva:download-fill" />}>
+          Baixar dados
+        </Button>
       </Container >
+      <Modal
+        open={openUpload}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Typography>Carregar Ficheiro(.xlsx)</Typography>
+          <input type='file' onChange={(e) => setFile(e.target.files[0])} accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
 
-
+          <Button style={{ marginTop: '30px' }} variant="contained" onClick={() => { handleSubmitFile() }} startIcon={<Iconify icon="eva:download-fill" />}>
+            Submeter
+          </Button>
+        </Box>
+      </Modal>
     </>
   );
 }

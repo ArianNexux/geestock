@@ -277,8 +277,8 @@ export default function RequestsForMe() {
           </Button>}
         </Stack>
 
-        <Stack direction="row" sx={{ justifyContent: "flex-end", alignContent: "center", marginBottom: "50px" }} >
-          <Box sx={{ m: 1, minWidth: '40%', marginRight: '50px' }}>
+        <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: 'center', alignContent: "center", marginBottom: "50px" }} >
+          <Box sx={{ minWidth: '40%' }}>
             <CustomFormControlSelect
               errors={errors}
               control={control}
@@ -301,10 +301,13 @@ export default function RequestsForMe() {
               isSearchable
             />
           </Box>
-          <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo nome ou Número PR" type="email" sx={{ minWidth: "50%" }} />
-          <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} sx={{ maxHeight: "35px" }}>
-            Pesquisar
-          </Button>
+          <Box sx={{ minWidth: '55%' }}>
+            <TextField variant="standard" onChange={(e) => { setSearch(e.target.value); }} label="Pesquisar pelo nome ou Número PR" type="email" sx={{ minWidth: "70%" }} />
+
+            <Button variant="contained" onClick={() => { handleSearch() }} startIcon={<Iconify icon="eva:search-fill" />} >
+              Pesquisar
+            </Button>
+          </Box>
         </Stack>
 
         <Card>

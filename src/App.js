@@ -21,7 +21,7 @@ export default function App() {
     <AuthContext>
       <ChakraProvider theme={theme}>
         <HelmetProvider>
-          <BrowserRouter>
+          <BrowserRouter basename='/'>
             <ThemeProvider>
               <ScrollToTop />
               <StyledChart />

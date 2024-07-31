@@ -197,7 +197,7 @@ export default function FormPieces() {
                 Início > Peças > Cadastrar
                 </Typography>
                 <Stack direction="column" mt={3} mb={5}>
-                    <Button onClick={() => { navigate(`/ dashboard / peca`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
+                    <Button onClick={() => { navigate(`/dashboard/peca`) }} sx={{ maxWidth: "10%" }} mb={5} variant="contained" startIcon={<Iconify icon="eva:arrow-back-fill" />}>
                         Voltar
                     </Button>
                     <Typography variant="h4" mt={3} gutterBottom>

@@ -17,9 +17,11 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
     const [selectedRow, setSelectedRow] = useState({})
     const [isOpenModalNumber, setIsOpenModalNumber] = useState(false)
     const [selected, setSelected] = useState([]);
+    const [actualQuantity, setActualQuantity] = useState(0);
 
     const handleClick = (event, row) => {
         console.log(row, selected);
+        row.quantityGiven = actualQuantity
         const selectedIndex = selected.findIndex(obj => obj.piece.value === row.piece.value);
         let newSelected = [];
         if (selectedIndex === -1) {
@@ -85,7 +87,6 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
                                             placeholder={"Localização da Peça"}
                                             type="text"
                                             defaultValue={row.locationInWarehouse}
-                                            disabled={selectedUser}
                                             onBlur={(e) => {
                                                 row.locationInWarehouse = e.target.value;
                                             }}
@@ -96,7 +97,7 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
                                 </TableCell>
                                 <TableCell align="center">
                                     <Box mb={5}>
-                                        <Input
+                                        {!selectedUser && <Input
                                             placeholder={"Insira a quantidade number"}
                                             type="number"
                                             disabled={selectedUser}
@@ -105,7 +106,19 @@ export default function TableConfirmOrder({ rows, hasPrice = false, showInput = 
                                             }}
 
                                             sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
-                                        />
+                                        />}
+
+                                        {selectedUser && <Input
+                                            placeholder={"Insira a quantidade number"}
+                                            type="number"
+                                            disabled={selectedUser}
+                                            onChange={(e) => {
+                                                row.quantityGiven = row.quantity
+                                            }}
+                                            value={row.quantity}
+
+                                            sx={{ width: "100px", height: "40px", border: "1.5px solid grey", borderRadius: "4px", textIndent: "5px", marginTop: "15px" }}
+                                        />}
 
                                     </Box>
                                 </TableCell>

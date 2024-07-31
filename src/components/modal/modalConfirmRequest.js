@@ -93,6 +93,7 @@ export function ModalConfirmRequest({ isOpen, setIsOpen, id, callBack }) {
                     title: "Requisição aceite com sucesso",
                     status: "success"
                 })
+                
                 MyDocument(response.data)
                 setIsOpen(false)
 

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
 import pdfMake from 'pdfmake/build/pdfmake'
+import * as moment from 'moment';
 import pdfFonts from "pdfmake/build/vfs_fonts";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 function getCurrentDateTime() {
@@ -27,6 +28,7 @@ const styles = StyleSheet.create({
     }
 });
 
+;
 // Create Document Component
 const MyDocument = (data) => {
     const docDefinition = {
@@ -129,7 +131,7 @@ const MyDocument = (data) => {
                             { text: data.warehouseOutcomming, style: 'cellStyle' },
                             { text: data.warehouseIncomming, style: 'cellStyle' },
                             { text: data.numberPr, style: 'cellStyle' },
-                            { text: getCurrentDateTime(), style: 'cellStyle' },
+                            { text: moment(data.createdAt).format("DD/MM/YYYY H:mm"), style: 'cellStyle' },
                         ]
                         ,
 

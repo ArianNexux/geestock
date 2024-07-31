@@ -31,7 +31,7 @@ export default function CustomFormControlSelect({
                             id={fieldNameObject}
                             value = {value || ""}
                             options={options}      
-                            
+                            placeholder="Selecionar..."
                             isSearchable={isSearchable}
                             isDisabled={isDisabled || !parent?.value}
                             onChange={(e)=>{
